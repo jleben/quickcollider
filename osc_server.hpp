@@ -39,6 +39,8 @@ public:
         lo_server_thread_free(mServerThread);
     }
 
+    int port() const { return lo_server_thread_get_port(mServerThread); }
+
     void start() {
         if (lo_server_thread_start(mServerThread))
             qWarning("OscServer: Failed to start.");
