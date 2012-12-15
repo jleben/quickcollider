@@ -1,8 +1,8 @@
 #ifndef OSC_CLIENT_HPP_INCLUDED
 #define OSC_CLIENT_HPP_INCLUDED
 
-#include "util.hpp"
-#include "generic_signal_handler.hpp"
+#include "../utility/utility.hpp"
+#include "../utility/generic_signal_handler.hpp"
 
 #include <lo/lo.h>
 #include <QDebug>

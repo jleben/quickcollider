@@ -1,7 +1,7 @@
 #ifndef OSC_DISPATCHER_HPP_INCLUDED
 #define OSC_DISPATCHER_HPP_INCLUDED
 
-#include "util.hpp"
+#include "../utility/utility.hpp"
 
 #include <QDebug>
 #include <QObject>

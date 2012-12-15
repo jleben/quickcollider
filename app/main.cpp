@@ -1,6 +1,6 @@
-#include "osc_server.hpp"
-#include "osc_client.hpp"
-#include "qml_osc_interface.hpp"
+#include "../osc/osc_server.hpp"
+#include "../osc/osc_client.hpp"
+#include "../osc/qml_osc_interface.hpp"
 
 #include <QGuiApplication>
 #include <QQuickView>

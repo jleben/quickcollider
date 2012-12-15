@@ -11,18 +11,18 @@ find_package(Qt5Quick REQUIRED)
 include_directories( ${Qt5Qml_INCLUDE_DIRS} )
 
 set( moc_hdr
-    osc_server.hpp
-    osc_client.hpp
-    osc_dispatcher.hpp
-    qml_osc_interface.hpp
+    osc/osc_server.hpp
+    osc/osc_client.hpp
+    osc/osc_dispatcher.hpp
+    osc/qml_osc_interface.hpp
 )
 
 set( src
-    main.cpp
-    osc_server.cpp
-    osc_client.cpp
-    osc_dispatcher.cpp
-    qml_osc_interface.cpp
+    app/main.cpp
+    osc/osc_server.cpp
+    osc/osc_client.cpp
+    osc/osc_dispatcher.cpp
+    osc/qml_osc_interface.cpp
 )
 
 qt5_wrap_cpp( moc_src ${moc_hdr} )

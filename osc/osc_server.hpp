@@ -2,7 +2,7 @@
 #define OSC_SERVER_HPP_INCLUDED
 
 #include "osc_dispatcher.hpp"
-#include "util.hpp"
+#include "../utility/utility.hpp"
 
 #include <QDebug>
 #include <QObject>
