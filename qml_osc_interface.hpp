@@ -5,13 +5,11 @@
 #include <QQmlParserStatus>
 #include <QByteArray>
 #include <QStringList>
-#include <QPointer>
 
 class QmlOscInterface : public QObject, public QQmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QQmlParserStatus)
-    Q_PROPERTY( QObject* target READ target WRITE setTarget )
     Q_PROPERTY( QString path READ path WRITE setPath )
 
 public:
@@ -20,9 +18,6 @@ public:
     {}
 
     ~QmlOscInterface();
-
-    void setTarget( QObject * object ) { mTarget = object; }
-    QObject *target() { return mTarget; }
 
     void setPath( const QString & path ) { mPath = path.toLatin1(); }
     QString path() const { return QString::fromLatin1(mPath); }
@@ -36,8 +31,6 @@ public:
 private slots:
 
 private:
-
-    QPointer<QObject> mTarget;
     QByteArray mPath;
 };
 
