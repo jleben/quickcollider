@@ -68,26 +68,16 @@ void OscClient::subscribe ( const QVariantList & args )
             {
                 // TODO: How to handle signals with same name but different arguments?
                 const QMetaObject *metaObject = object->metaObject();
-                int signalIdx = -1;
-                for(int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
-                {
-                    QMetaMethod method = metaObject->method(idx);
-                    if( method.methodType() == QMetaMethod::Signal
-                            && method.name() == name )
-                    {
-                        if (notifier->connect(object, method))
-                            qDebug() << "OscClient: Connected:" << path;
-                        else
-                            qWarning() << "OscClient:: Failed to connect:" << path;
-                        signalIdx = idx;
-                        break;
-                    }
+                int signalIdx = QuickCollider::indexOfMethod(metaObject, name );
+                if (signalIdx != -1) {
+                    if ( notifier->connect( object, metaObject->method(signalIdx) ) )
+                        qDebug() << "OscClient: Connected:" << path;
+                    else
+                        qWarning() << "OscClient:: Failed to connect:" << path;
                 }
-                if (signalIdx == -1)  {
+                else {
                     qWarning("OscClient: interface at \"%s\" has no signal named \"%s\"",
                              basePath.constData(), name.constData());
-                    qDebug() << "OscClient: signal index =" << signalIdx;
-                    qDebug() << "OscClient: method offset =" << metaObject->methodOffset();
                 }
             }
             qDebug() << "OscClient: subscribed to:" << path;
@@ -149,14 +139,22 @@ void OscClient::onInterfaceAdded ( const OscInterface & intf )
 
     const QMetaObject *metaObject = intf.object->metaObject();
 
-    for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
+    NotificationHash::iterator it;
+    for( it = mNotifications.begin(); it != mNotifications.end(); ++it )
     {
-        QMetaMethod method = metaObject->method(idx);
-        if (method.methodType() == QMetaMethod::Signal) {
-            if (connect(intf.object, method, intf.path))
-                qDebug() << "OscClient: Connected:" << intf.path;
+        Notifier *notifier = it.value();
+        if (notifier->path() == intf.path) {
+            const QByteArray &methodName = notifier->name();
+            int signalIdx = QuickCollider::indexOfMethod(metaObject, methodName);
+            if (signalIdx == -1) {
+                qWarning() << "OscClient: No signal" << methodName
+                           << "found for subscription at:" << notifier->path();
+                continue;
+            }
+            if (notifier->connect(intf.object, metaObject->method(signalIdx)))
+                qDebug() << "OscClient: Connected:" << it.key();
             else
-                qWarning() << "OscClient:: Failed to connect:" << intf.path;
+                qWarning() << "OscClient:: Failed to connect:" << it.key();
         }
     }
 }
