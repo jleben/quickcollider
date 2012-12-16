@@ -68,7 +68,7 @@ void OscClient::subscribe ( const QVariantList & args )
             {
                 // TODO: How to handle signals with same name but different arguments?
                 const QMetaObject *metaObject = object->metaObject();
-                int signalIdx = QuickCollider::indexOfMethod(metaObject, name );
+                int signalIdx = QuickCollider::indexOfMethod(metaObject, name, QMetaMethod::Signal);
                 if (signalIdx != -1) {
                     if ( notifier->connect( object, metaObject->method(signalIdx) ) )
                         qDebug() << "OscClient: Connected:" << path;
@@ -145,7 +145,7 @@ void OscClient::onInterfaceAdded ( const OscInterface & intf )
         Notifier *notifier = it.value();
         if (notifier->path() == intf.path) {
             const QByteArray &methodName = notifier->name();
-            int signalIdx = QuickCollider::indexOfMethod(metaObject, methodName);
+            int signalIdx = QuickCollider::indexOfMethod(metaObject, methodName, QMetaMethod::Signal);
             if (signalIdx == -1) {
                 qWarning() << "OscClient: No signal" << methodName
                            << "found for subscription at:" << notifier->path();

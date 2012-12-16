@@ -38,13 +38,17 @@ struct OscInterface
 
 namespace QuickCollider {
 
-inline int indexOfMethod( const QMetaObject * metaObject, const QByteArray methodName )
+inline int indexOfMethod( const QMetaObject * metaObject,
+                          const QByteArray methodName, int methodType = -1 )
 {
     while (metaObject->superClass() != 0)
     {
         for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
         {
-            if (metaObject->method(idx).name() == methodName)
+            QMetaMethod method = metaObject->method(idx);
+            if (methodType != -1 && method.methodType() != methodType)
+                continue;
+            if (method.name() == methodName)
                 return idx;
         }
         metaObject = metaObject->superClass();
