@@ -10,6 +10,6 @@
 ~elem.subscribe( \yChanged, { |...a| a.postln; } );
 ~elem.unsubscribe( \xChanged, \yChanged );
 ~elem.unsubscribeAll;
-~elem.send( \setX, 300.rand )
-~elem.send( \setY, 300.rand )
-~elem.send( \setPos, 300.rand, 300.rand )
+~elem.set( \x, 300.rand );
+~elem.set( \y, 300.rand );
+~elem.invoke( \setPos, 300.rand, 300.rand )
