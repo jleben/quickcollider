@@ -51,15 +51,11 @@ Item {
                 Behavior on x { SpringAnimation { spring: 10; damping: 0.1 } }
                 Behavior on y { SpringAnimation { spring: 10; damping: 0.1 } }
 
+                function setPos(x, y) { item.x = x; item.y = y }
+
                 property var osc: OSC {
                     id: osc
                     path: "/rect" + index
-                    function setX(x) { item.x = x }
-                    function setY(y) { item.y = y }
-                    function setPos(x, y) { item.x = x; item.y = y }
-                    signal xChanged(real x)
-                    signal yChanged(real y);
-                    signal posChanged(real x, real y);
                 }
             }
 

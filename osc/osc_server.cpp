@@ -14,9 +14,20 @@ OscServer::OscServer(const QByteArray &port ):
 
 void OscServer::addInterface( QObject *object, const QByteArray & path )
 {
+    if (!object)
+        return;
+
     OscInterface intf;
     intf.object = object;
     intf.path = path;
+
+    InterfaceList::iterator it = mInterfaces.begin();
+    for (it = mInterfaces.begin(); it != mInterfaces.end(); ++it) {
+        if (it->object == object) {
+            qWarning("OscServer: this object already added.");
+            return;
+        }
+    }
 
     mInterfaces.append(intf);
     qDebug() << "OscServer: added interface:" << intf.path;
@@ -26,6 +37,9 @@ void OscServer::addInterface( QObject *object, const QByteArray & path )
 
 void OscServer::removeInterface( QObject *object )
 {
+    if (!object)
+        return;
+
     OscInterface intf;
 
     InterfaceList::iterator it = mInterfaces.begin();
@@ -65,7 +79,8 @@ void OscServer::deleteIfUnsubscribed( OscClient *client )
 
 void OscServer::customEvent(QEvent* event)
 {
-    static QByteArray sendPath("/send/");
+    static QByteArray setPath("/set/");
+    static QByteArray invokePath("/invoke/");
     static QByteArray subscribePath("/subscribe");
     static QByteArray unsubscribePath("/unsubscribe");
     static QByteArray unsubscribeAllPath("/unsubscribeAll");
@@ -74,19 +89,13 @@ void OscServer::customEvent(QEvent* event)
     QByteArray path = message->path;
     const QVariantList & args = message->args;
 
-    if (path.startsWith(sendPath)) {
-        QByteArray dispatchPath = path.mid( sendPath.length() - 1 );
-        if (dispatchPath.length() < 2) {
-            qWarning("OscServer: '/send' path incomplete.");
-            return;
-        }
-        if (args.count() < 1) {
-            qWarning("OscServer: '/send' needs at least one argument.");
-            return;
-        }
-        dispatchPath += '/';
-        dispatchPath += args[0].toByteArray();
-        mDispatcher->dispatch( dispatchPath, args.mid(1) );
+    if (path.startsWith(setPath)) {
+        QByteArray dispatchPath = path.mid( setPath.length() - 1 );
+        mDispatcher->dispatch( OscDispatcher::Property, dispatchPath, args );
+    }
+    else if (path.startsWith(invokePath)) {
+        QByteArray dispatchPath = path.mid( invokePath.length() - 1 );
+        mDispatcher->dispatch( OscDispatcher::Method, dispatchPath, args );
     }
     else if (path == subscribePath) {
         OscClient *subscriber = findClient( message->source );

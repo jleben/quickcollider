@@ -22,28 +22,8 @@ struct DispatchNode
         Method
     };
 
-    Type type() const { return mType; }
-
     QByteArray path;
     QObject *object;
-
-protected:
-    DispatchNode(Type type): mType(type), object(0) {}
-
-private:
-    const Type mType;
-};
-
-struct PropertyNode : public DispatchNode
-{
-    PropertyNode(): DispatchNode(Property) {}
-    QMetaProperty property;
-};
-
-struct MethodNode : public DispatchNode
-{
-    MethodNode(): DispatchNode(Method) {}
-    QMetaMethod method;
 };
 
 class OscDispatcher : public QObject
@@ -51,11 +31,16 @@ class OscDispatcher : public QObject
     Q_OBJECT
 
 public:
+    enum DispatchTarget {
+        Property,
+        Method
+    };
+
     OscDispatcher(QObject * parent = 0): QObject(parent) {}
 
     void addInterface( const OscInterface & );
     void removeInterface( const OscInterface & );
-    bool dispatch( const QByteArray & path, const QVariantList & args );
+    bool dispatch( DispatchTarget targetType, const QByteArray & path, const QVariantList & args );
 
 private:
     friend class QmlOscInterface;
@@ -73,19 +58,7 @@ private:
         qDebug() << "OscDispatcher: registered path:" << node->path;
         return true;
     }
-#if 0
-    bool remove( const QByteArray & path )
-    {
-        int removedCount = sInstance->mDispatchHash.remove(path);
-        if (removedCount == 0) {
-            qWarning() << "OscDispatcher: cannot unregister path: " << path << "not registered.";
-            return false;
-        } else {
-            qDebug() << "OscDispatcher: unregistered path:" << path;
-            return true;
-        }
-    }
-#endif
+
     DispatchHash mDispatchHash;
 };
 

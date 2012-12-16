@@ -8,54 +8,22 @@ void OscDispatcher::addInterface( const OscInterface &intf )
         return;
     }
 
-    const QMetaObject *metaObject = intf.object->metaObject();
-
-    for (int idx = metaObject->propertyOffset(); idx < metaObject->propertyCount(); ++idx)
-    {
-        QMetaProperty property = metaObject->property(idx);
-
-        QByteArray path = intf.path;
-        path += '/';
-        path += property.name();
-
-        PropertyNode *node = new PropertyNode;
-        node->object = intf.object;
-        node->path = path;
-        node->property = property;
-
-        addNode(node);
-    }
-
-    for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
-    {
-        QMetaMethod method = metaObject->method(idx);
-        if (method.access() != QMetaMethod::Private &&
-                (method.methodType() == QMetaMethod::Method
-                 || method.methodType() == QMetaMethod::Slot))
-        {
-            QByteArray path = intf.path;
-            path += '/';
-            path += method.name();
-
-            MethodNode * node = new MethodNode;
-            node->object = intf.object;
-            node->path = path;
-            node->method = method;
-
-            addNode(node);
-        }
-    }
+    DispatchNode *node = new DispatchNode;
+    node->object = intf.object;
+    node->path = intf.path;
+    addNode(node);
 }
 
 void OscDispatcher::removeInterface(const OscInterface &intf)
 {
-    DispatchHash::iterator it = mDispatchHash.begin();
-    while( it != mDispatchHash.end() )
-    {
-        if (it.value()->object == intf.object)
-            it = mDispatchHash.erase(it);
-        else
-            ++it;
+    DispatchHash::iterator it = mDispatchHash.find(intf.path);
+    if ( it != mDispatchHash.end() ) {
+        delete it.value();
+        it = mDispatchHash.erase(it);
+        qDebug() << "OscDispatcher: removed node for path:" << intf.path;
+    }
+    else {
+        qWarning() << "OscDispatcher: no interface to remove for path:" << intf.path;
     }
 }
 
@@ -66,34 +34,73 @@ inline static QGenericArgument toGenericArgument( const QVariantList & varList, 
             : QGenericArgument();
 }
 
-bool OscDispatcher::dispatch( const QByteArray & path, const QVariantList & args )
+inline static int indexOfMethod( const QMetaObject * metaObject, const QByteArray methodName )
 {
-    DispatchHash::const_iterator it = mDispatchHash.find(path);
-    if (it == mDispatchHash.end()) {
-        qWarning() << "OscDispatcher: path" << path << "not registered.";
+    while (metaObject->superClass() != 0)
+    {
+        for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
+        {
+            if (metaObject->method(idx).name() == methodName)
+                return idx;
+        }
+        metaObject = metaObject->superClass();
+    }
+    return -1;
+}
+
+bool OscDispatcher::dispatch( DispatchTarget targetType,
+                              const QByteArray & path, const QVariantList & args )
+{
+    if (args.count() < 1) {
+        qWarning() << "OscDispatcher: Cannot dispatch - need at least 1 argument:" << path;
         return false;
     }
 
-    const DispatchNode * node = it.value();
+    const QByteArray & nodePath = path;
+    QByteArray targetName = args[0].toByteArray();
+/*
+    int lastSeparatorIdx = path.lastIndexOf('/');
+    nodePath = path.left(lastSeparatorIdx);
+    targetName = path.mid(lastSeparatorIdx+1);
+*/
 
-    switch (node->type())
-    {
-    case DispatchNode::Property: {
-        if (args.count() < 1) {
-            qWarning() << "OscDispatcher: Cannot set property" << path << "without an argument.";
-            return false;
-        };
-        const PropertyNode *pnode = static_cast<const PropertyNode*>(node);
-        bool ok = pnode->property.write( pnode->object, args[0] );
-        if (!ok)
-            qWarning() << "OscDispatcher: Failed to set property:" << path;
-        return ok;
+    if (nodePath.isEmpty() || targetName.isEmpty()) {
+        qWarning() << "OscDispatcher: Cannot dispatch - no path or target name:" << path;
+        return false;
     }
-    case DispatchNode::Method: {
-        const MethodNode *mnode = static_cast<const MethodNode*>(node);
-        bool ok = mnode->method.invoke
-                ( mnode->object,
-                  toGenericArgument( args, 0 ),
+
+    DispatchHash::const_iterator it = mDispatchHash.find(path);
+    if (it == mDispatchHash.end()) {
+        qWarning() << "OscDispatcher: no object for path:" << nodePath;
+        return false;
+    }
+
+    QObject *object = it.value()->object;
+    const QMetaObject *metaObject = object->metaObject();
+
+    bool success;
+    if (targetType == Property ) {
+        if (args.count() < 2) {
+            qWarning() << "OscDispatcher: Cannot set property without a value.";
+            return false;
+        }
+        int propertyIdx = metaObject->indexOfProperty(targetName);
+        if (propertyIdx == -1) {
+            qWarning() << "OscDispatcher: No property for path:" << path;
+            return false;
+        }
+        success = metaObject->property(propertyIdx).write( object, args[1] );
+        if (!success)
+            qWarning() << "OscDispatcher: Failed to set property for path:" << path;
+    }
+    else if (targetType == Method) {
+        int methodIdx = indexOfMethod( metaObject, targetName );
+        if (methodIdx == -1) {
+            qWarning() << "OscDispatcher: No method for path:" << path;
+            return false;
+        }
+        success = metaObject->method(methodIdx).invoke
+                ( object,
                   toGenericArgument( args, 1 ),
                   toGenericArgument( args, 2 ),
                   toGenericArgument( args, 3 ),
@@ -102,12 +109,11 @@ bool OscDispatcher::dispatch( const QByteArray & path, const QVariantList & args
                   toGenericArgument( args, 6 ),
                   toGenericArgument( args, 7 ),
                   toGenericArgument( args, 8 ),
-                  toGenericArgument( args, 9 ) );
-        if (!ok)
-            qWarning() << "OscDispatcher: Failed to invoke method:" << path;
-        return ok;
-    }
+                  toGenericArgument( args, 9 ),
+                  toGenericArgument( args, 10 ) );
+        if (!success)
+            qWarning() << "OscDispatcher: Failed to invoke method for path:" << path;
     }
 
-    return false;
+    return success;
 }

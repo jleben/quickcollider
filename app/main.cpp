@@ -28,14 +28,13 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<QmlOscInterface>("OSC", 0, 1, "OSC");
 
-    QQmlEngine engine;
+    OscServer oscServer( serverPort.toLatin1() );
+    oscServer.start();
 
+    QQmlEngine engine;
     QQuickView *window = new QQuickView(&engine, 0);
     window->setSource(QUrl::fromLocalFile(scenePath));
     window->show();
-
-    OscServer oscServer( serverPort.toLatin1() );
-    oscServer.start();
 
     return app.exec();
 }
