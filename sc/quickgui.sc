@@ -30,7 +30,7 @@ QuickGui
                 subscriptions[fullPath] = listener;
             }{
 				// FIXME: OSCFunc:-func should really be settable:
-				listener.prFunc_(func);
+				listener.prFunc_(wrapFunc);
             };
 			signals = signals.add(signal);
         };
