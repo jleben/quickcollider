@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <QByteArray>
 #include <QObject>
+#include <QMetaObject>
+#include <QMetaMethod>
 
 struct OscAddress
 {
@@ -33,5 +35,23 @@ struct OscInterface
     QObject *object;
     QByteArray path;
 };
+
+namespace QuickCollider {
+
+inline int indexOfMethod( const QMetaObject * metaObject, const QByteArray methodName )
+{
+    while (metaObject->superClass() != 0)
+    {
+        for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
+        {
+            if (metaObject->method(idx).name() == methodName)
+                return idx;
+        }
+        metaObject = metaObject->superClass();
+    }
+    return -1;
+}
+
+}
 
 #endif // QML_OSC_UTIL_HPP_INCLUDED

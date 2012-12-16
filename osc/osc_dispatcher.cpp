@@ -34,20 +34,6 @@ inline static QGenericArgument toGenericArgument( const QVariantList & varList, 
             : QGenericArgument();
 }
 
-inline static int indexOfMethod( const QMetaObject * metaObject, const QByteArray methodName )
-{
-    while (metaObject->superClass() != 0)
-    {
-        for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); ++idx)
-        {
-            if (metaObject->method(idx).name() == methodName)
-                return idx;
-        }
-        metaObject = metaObject->superClass();
-    }
-    return -1;
-}
-
 bool OscDispatcher::dispatch( DispatchTarget targetType,
                               const QByteArray & path, const QVariantList & args )
 {
@@ -94,7 +80,7 @@ bool OscDispatcher::dispatch( DispatchTarget targetType,
             qWarning() << "OscDispatcher: Failed to set property for path:" << path;
     }
     else if (targetType == Method) {
-        int methodIdx = indexOfMethod( metaObject, targetName );
+        int methodIdx = QuickCollider::indexOfMethod( metaObject, targetName );
         if (methodIdx == -1) {
             qWarning() << "OscDispatcher: No method for path:" << path;
             return false;
