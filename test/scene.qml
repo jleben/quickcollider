@@ -51,26 +51,28 @@ Item {
                 Behavior on x { SpringAnimation { spring: 10; damping: 0.1 } }
                 Behavior on y { SpringAnimation { spring: 10; damping: 0.1 } }
 
-                function setPos(x, y) { item.x = x; item.y = y }
+                function setPos(x, y) { item.x = x; item.y = y; posChanged(x,y); }
 
-                property var osc: OSC {
+                signal posChanged(real x, real y);
+
+                OSC {
                     id: osc
                     path: "/rect" + index
                 }
             }
 
-            onItemAdded: parent.currentItem = item
+            onItemAdded: {
+                parent.currentItem = item;
+                item.x = Math.random() * (parent.width - item.width);
+                item.y = Math.random() * (parent.height - item.height);
+            }
         }
         MouseArea {
             anchors.fill: parent
             onPressed: moveItem(parent.currentItem, mouse);
             onPositionChanged: moveItem(parent.currentItem, mouse);
             function moveItem (item, mouse) {
-                item.x = mouse.x;
-                item.y = mouse.y
-                item.osc.xChanged(mouse.x);
-                item.osc.yChanged(mouse.y);
-                item.osc.posChanged(mouse.x, mouse.y);
+                item.setPos(mouse.x, mouse.y);
             }
         }
     }
