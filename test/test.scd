@@ -6,6 +6,7 @@
 // Try changing the number after '/rect', as you add rectangles in the QML scene:
 ~elem = QuickGuiElement(~gui, '/rect0');
 ~elem.subscribe( \posChanged, { |...a| a.postln; } );
+// Unfortunately, automatic property-change signals don't send property value :(
 ~elem.subscribe( \xChanged, { |...a| a.postln; } );
 ~elem.subscribe( \yChanged, { |...a| a.postln; } );
 ~elem.unsubscribe( \xChanged, \yChanged );
