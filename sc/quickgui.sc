@@ -67,10 +67,15 @@ QuickGui
 
 QuickGuiElement
 {
-    var gui, path, sendPath;
+    var gui, path, setPath, invokePath;
 
     *new { arg gui, path;
-        ^super.newCopyArgs(gui, path, ("/send" ++ path).asSymbol);
+        ^super.newCopyArgs(
+			gui,
+			path,
+			("/set" ++ path).asSymbol,
+			("/invoke" ++ path).asSymbol
+		);
     }
 
     subscribe { arg ...args;
@@ -85,7 +90,11 @@ QuickGuiElement
 		gui.unsubscribeAll(path);
 	}
 
-    send { arg key ...arguments;
-        gui.sendMsg(sendPath, key, *arguments);
+    set { arg property, value;
+        gui.sendMsg(setPath, property, value);
     }
+
+	invoke { arg method ...arguments;
+		gui.sendMsg(invokePath, method, *arguments);
+	}
 }
