@@ -107,6 +107,8 @@ private:
 
         OscServer *me = reinterpret_cast<OscServer*>(user_data);
         QCoreApplication::postEvent(me, message);
+
+        return 0;
     }
 
     lo_server_thread mServerThread;
