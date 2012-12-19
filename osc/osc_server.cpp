@@ -24,14 +24,14 @@ void OscServer::addInterface( QObject *object, const QByteArray & path )
     InterfaceList::iterator it = mInterfaces.begin();
     for (it = mInterfaces.begin(); it != mInterfaces.end(); ++it) {
         if (it->object == object) {
-            qWarning("OscServer: this object already added.");
+            qWarning() << "OscServer: this object already added:" << intf.path;
             return;
         }
     }
 
     mInterfaces.append(intf);
-    qDebug() << "OscServer: added interface:" << intf.path;
     mDispatcher->addInterface(intf);
+    qDebug() << "OscServer: added object:" << intf.path;
     emit interfaceAdded(intf);
 }
 
@@ -48,13 +48,12 @@ void OscServer::removeInterface( QObject *object )
         if  (it->object == object) {
             intf = *it;
             mInterfaces.erase(it);
-            qDebug() << "OscServer: removed interface:" << intf.path;
-            break;
+            mDispatcher->removeInterface(intf);
+            qDebug() << "OscServer: removed object:" << intf.path;
+            emit interfaceRemoved(intf);
+            return;
         }
     }
-
-    mDispatcher->removeInterface(intf);
-    emit interfaceRemoved(intf);
 }
 
 OscClient *OscServer::findClient( const OscAddress & address )
