@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
     QString serverPort = arguments[1];
     QString scenePath = arguments[2];
 
-    qmlRegisterType<QmlOscInterface>("OSC", 0, 1, "OSC");
+    qmlRegisterUncreatableType<QmlOscInterface>
+            ("OSC", 0, 1, "OSC", "Cannot instantiate this object");
 
     OscServer oscServer( serverPort.toLatin1() );
     oscServer.start();

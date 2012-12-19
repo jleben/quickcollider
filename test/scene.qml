@@ -55,10 +55,7 @@ Item {
 
                 signal posChanged(real x, real y);
 
-                OSC {
-                    id: osc
-                    path: "/rect" + index
-                }
+                OSC.path: "/rect" + index
             }
 
             onItemAdded: {

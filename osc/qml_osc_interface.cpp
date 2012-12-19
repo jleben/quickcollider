@@ -1,42 +1,32 @@
 #include "qml_osc_interface.hpp"
 #include "osc_server.hpp"
 
-void QmlOscInterface::componentComplete()
-{
-    if (!mTarget)
-        mTarget = parent();
-
-    if (mTarget && !mPath.isEmpty()) {
-        OscServer::instance()->addInterface(mTarget, mPath);
-        connect(mTarget, SIGNAL(destroyed()), this, SLOT(onTargetDestroyed()));
-    }
-}
-
-QmlOscInterface::~QmlOscInterface()
+QmlOscObject::~QmlOscObject()
 {
     if (mTarget)
         OscServer::instance()->removeInterface(mTarget);
 }
 
-void QmlOscInterface::setPath( const QString & path )
+void QmlOscObject::setPath( const QString & path )
 {
     if (!mPath.isEmpty()) {
-        //qWarning("QmlOscInterface: Invalid attempt to set path when one already set.");
+        //qWarning("QmlOscObject: Changing path not supported yet.");
         return;
     }
+
     mPath = path.toLatin1();
-}
+    mTarget = parent();
 
-void QmlOscInterface::setTarget( QObject *object )
-{
-    if (mTarget) {
-        //qWarning("QmlOscInterface: Invalid attempt to set target when one already set.");
+    if (!mTarget) {
+        qWarning("QmlOscObject: Need a parent object.");
         return;
     }
-    mTarget = object;
+
+    OscServer::instance()->addInterface(mTarget, mPath);
+    connect(mTarget, SIGNAL(destroyed()), this, SLOT(onTargetDestroyed()));
 }
 
-void QmlOscInterface::onTargetDestroyed()
+void QmlOscObject::onTargetDestroyed()
 {
     OscServer::instance()->removeInterface(mTarget);
     mTarget = 0;

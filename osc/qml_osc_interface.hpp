@@ -2,36 +2,28 @@
 #define QML_OSC_INTERFACE_HPP_INCLUDED
 
 #include <QObject>
-#include <QQmlParserStatus>
+#include <QtQml>
 #include <QByteArray>
 #include <QStringList>
+#include <QDebug>
 
-class QmlOscInterface : public QObject, public QQmlParserStatus
+class QmlOscObject : public QObject
 {
     Q_OBJECT
-    Q_INTERFACES(QQmlParserStatus)
     Q_PROPERTY( QString path READ path WRITE setPath )
-    Q_PROPERTY( QObject * target READ target WRITE setTarget )
 
 public:
-    QmlOscInterface( QObject * parent = 0):
+    QmlOscObject( QObject * parent = 0):
         QObject(parent),
         mTarget(0)
     {}
 
-    ~QmlOscInterface();
+    ~QmlOscObject();
 
     void setPath( const QString & path );
     QString path() const { return QString::fromLatin1(mPath); }
 
-    void setTarget( QObject * );
-    QObject * target() const { return mTarget; }
-
     const QByteArray & rawPath() { return mPath; }
-
-    virtual void componentComplete();
-
-    virtual void classBegin() {}
 
 private slots:
     void onTargetDestroyed();
@@ -40,5 +32,17 @@ private:
     QByteArray mPath;
     QObject *mTarget;
 };
+
+class QmlOscInterface : public QObject
+{
+    Q_OBJECT
+public:
+    static QmlOscObject *qmlAttachedProperties(QObject *object)
+    {
+        return new QmlOscObject(object);
+    }
+};
+
+QML_DECLARE_TYPEINFO(QmlOscInterface, QML_HAS_ATTACHED_PROPERTIES);
 
 #endif // QML_OSC_INTERFACE_HPP_INCLUDED
