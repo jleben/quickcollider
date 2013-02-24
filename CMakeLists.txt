@@ -15,6 +15,7 @@ set( moc_hdr
     osc/osc_client.hpp
     osc/osc_dispatcher.hpp
     osc/qml_osc_interface.hpp
+    gui/util/range_model.hpp
 )
 
 set( src

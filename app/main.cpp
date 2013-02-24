@@ -1,6 +1,7 @@
 #include "../osc/osc_server.hpp"
 #include "../osc/osc_client.hpp"
 #include "../osc/qml_osc_interface.hpp"
+#include "../gui/util/range_model.hpp"
 
 #include <QGuiApplication>
 #include <QQuickView>
@@ -28,6 +29,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterUncreatableType<QmlOscInterface>
             ("OSC", 0, 1, "OSC", "Cannot instantiate this object");
+    qmlRegisterType<quick_collider::range_model>
+            ("QuickCollider", 0, 1, "RangeModel");
 
     OscServer oscServer( serverPort.toLatin1() );
     oscServer.start();
