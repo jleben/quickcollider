@@ -2,23 +2,59 @@
 #include "osc_server.hpp"
 #include "qml_osc_interface.hpp"
 
-Notifier::Notifier (OscClient *client, const QByteArray & path):
+
+Notifier::Notifier( OscClient *client, const QByteArray & path, const QByteArray & name ):
     GenericSignalHandler(client),
     mClient(client),
-    mPath(path)
+    mPath(path),
+    mFullPath( path + '/' + name ),
+    mName(name)
+{}
+
+bool Notifier::connect( QObject *object )
 {
-    int lastSeparator = path.lastIndexOf('/');
-    if (lastSeparator == -1) {
-        qWarning("Notifier: invalid path.");
-        return;
+    // TODO: How to handle signals with same name but different arguments?
+    const QMetaObject *metaObject = object->metaObject();
+
+    int propertyIdx = metaObject->indexOfProperty( mName.constData() );
+    if (propertyIdx != -1)
+    {
+        int signalIdx = metaObject->property( propertyIdx ).notifySignalIndex();
+        if (signalIdx != -1)
+        {
+            if (GenericSignalHandler::connect( object, metaObject->method(signalIdx) )) {
+                mPropertyIdx = propertyIdx;
+                return true;
+            }
+        }
     }
-    mBasePath = path.left(lastSeparator);
-    mName = path.mid(lastSeparator+1);
+    else
+    {
+        int signalIdx = QuickCollider::indexOfMethod(metaObject, mName, QMetaMethod::Signal);
+        if (signalIdx != -1)
+        {
+            if (GenericSignalHandler::connect( object, metaObject->method(signalIdx) )) {
+                mPropertyIdx = -1;
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void Notifier::invoke( const QVariantList & args )
 {
-    mClient->send(mPath, args);
+    if (mPropertyIdx == -1) {
+        mClient->send(mFullPath, args);
+    }
+    else {
+        Q_ASSERT( mOrigin );
+        QVariant arg = mOrigin->metaObject()->property( mPropertyIdx ).read( mOrigin );
+        QVariantList args;
+        args << arg;
+        mClient->send(mFullPath, args);
+    }
 }
 
 OscClient::OscClient( const OscAddress & address, OscServer * server ):
@@ -35,79 +71,59 @@ OscClient::~OscClient()
     lo_address_free(mLoAddress);
 }
 
-void OscClient::subscribe ( const QVariantList & args )
+void OscClient::subscribe ( const QByteArray & path,
+                            const QList<QByteArray> & names )
 {
-    if (args.count() < 2) {
-        qWarning("OscClient: subscribe action needs at least 2 arguments.");
-    }
-
-    QByteArray basePath = args[0].toByteArray();
     QObject *object = 0;
 
     const OscServer::InterfaceList &interfaces = mServer->interfaces();
     foreach( const OscInterface & intf, interfaces )
     {
-        if (intf.path == basePath) {
+        if (intf.path == path) {
             object = intf.object;
             break;
         }
     }
 
-    for (int argIdx = 1; argIdx < args.count(); ++argIdx)
+    foreach ( const QByteArray & name, names )
     {
-        QByteArray name = args[argIdx].toByteArray();
-        QByteArray path = basePath + '/' + name;
+        QByteArray fullPath = path + '/' + name;
 
         Notifier * notifier;
-        NotificationHash::iterator it = mNotifications.find(path);
+        NotificationHash::iterator it = mNotifications.find(fullPath);
         if (it == mNotifications.end())
         {
-            Notifier *notifier = new Notifier(this, path);
-            mNotifications.insert(path, notifier);
+            Notifier *notifier = new Notifier(this, path, name);
+            mNotifications.insert(fullPath, notifier);
             if (object)
             {
-                // TODO: How to handle signals with same name but different arguments?
-                const QMetaObject *metaObject = object->metaObject();
-                int signalIdx = QuickCollider::indexOfMethod(metaObject, name, QMetaMethod::Signal);
-                if (signalIdx != -1) {
-                    if ( notifier->connect( object, metaObject->method(signalIdx) ) )
-                        qDebug() << "OscClient: Connected:" << path;
-                    else
-                        qWarning() << "OscClient:: Failed to connect:" << path;
-                }
-                else {
-                    qWarning("OscClient: interface at \"%s\" has no signal named \"%s\"",
-                             basePath.constData(), name.constData());
-                }
+                bool connected = notifier->connect( object );
+                if (connected)
+                    qDebug() << "OscClient: Connected:" << fullPath;
+                else
+                    qWarning() << "OscClient: Failed to connect:" << fullPath;
             }
-            qDebug() << "OscClient: subscribed to:" << path;
+            qDebug() << "OscClient: Subscribed to:" << fullPath;
         }
         else {
-            qDebug() << "OscClient: already subscribed to:" << path;
+            qDebug() << "OscClient: Already subscribed to:" << fullPath;
         }
     }
 }
 
-void OscClient::unsubscribe( const QVariantList &args )
+void OscClient::unsubscribe( const QByteArray & path, const QList<QByteArray> & names )
 {
-    if (args.count() < 2) {
-        qWarning("OscClient: unsubscribe action needs at least 2 arguments.");
-    }
-
-    QByteArray basePath = args[0].toByteArray();
-
-    for (int argIdx = 1; argIdx < args.count(); ++argIdx)
+    foreach( const QByteArray & name, names )
     {
-        QByteArray name = args[argIdx].toByteArray();
-        QByteArray path = basePath + '/' + name;
-        NotificationHash::iterator it = mNotifications.find(path);
+        QByteArray fullPath = path + '/' + name;
+        NotificationHash::iterator it = mNotifications.find(fullPath);
         if (it != mNotifications.end()) {
             delete it.value();
             mNotifications.erase(it);
-            qDebug() << "OscClient: unsubscribed from:" << path;
+            qDebug() << "OscClient: Unsubscribed from:" << fullPath;
         }
         else {
-            qWarning() << "OscClient: no subscription to remove for:" << path;
+            qWarning() << "OscClient: No subscription to remove for:" << fullPath;
         }
     }
 }
@@ -122,7 +138,7 @@ void OscClient::unsubscribeAll ( const QByteArray & path )
             QByteArray fullPath = it.key();
             delete notifier;
             it = mNotifications.erase(it);
-            qDebug() << "OscClient: unsubscribed from:" << fullPath;
+            qDebug() << "OscClient: Unsubscribed from:" << fullPath;
         }
         else {
             ++it;
@@ -133,7 +149,7 @@ void OscClient::unsubscribeAll ( const QByteArray & path )
 void OscClient::onInterfaceAdded ( const OscInterface & intf )
 {
     if (intf.path.isEmpty()) {
-        qWarning("OscClient: interface path is empty.");
+        qWarning("OscClient: Interface path is empty.");
         return;
     }
 
@@ -144,14 +160,8 @@ void OscClient::onInterfaceAdded ( const OscInterface & intf )
     {
         Notifier *notifier = it.value();
         if (notifier->path() == intf.path) {
-            const QByteArray &methodName = notifier->name();
-            int signalIdx = QuickCollider::indexOfMethod(metaObject, methodName, QMetaMethod::Signal);
-            if (signalIdx == -1) {
-                qWarning() << "OscClient: No signal" << methodName
-                           << "found for subscription at:" << notifier->path();
-                continue;
-            }
-            if (notifier->connect(intf.object, metaObject->method(signalIdx)))
+            bool connected = notifier->connect( intf.object );
+            if (connected)
                 qDebug() << "OscClient: Connected:" << it.key();
             else
                 qWarning() << "OscClient:: Failed to connect:" << it.key();

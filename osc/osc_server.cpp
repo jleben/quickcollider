@@ -76,6 +76,19 @@ void OscServer::deleteIfUnsubscribed( OscClient *client )
     }
 }
 
+OscClient * OscServer::clientForAddress( const OscAddress & address )
+{
+    OscClient *subscriber = findClient( address );
+    if (!subscriber) {
+        subscriber = new OscClient( address, this);
+        mClients.append(subscriber);
+        qDebug("OscServer: new client: %s:%i",
+               qPrintable(address.host),
+               address.port);
+    }
+    return subscriber;
+}
+
 void OscServer::customEvent(QEvent* event)
 {
     static QByteArray setPath("/set/");
@@ -97,21 +110,30 @@ void OscServer::customEvent(QEvent* event)
         mDispatcher->dispatch( OscDispatcher::Method, dispatchPath, args );
     }
     else if (path == subscribePath) {
-        OscClient *subscriber = findClient( message->source );
-        if (!subscriber) {
-            subscriber = new OscClient( message->source, this);
-            mClients.append(subscriber);
-            qDebug("OscServer: new client: %s:%i",
-                   qPrintable(message->source.host),
-                   message->source.port);
+        if (args.count() < 2) {
+            qWarning("OscClient: subscribe action needs at least 2 arguments.");
+            return;
         }
-        subscriber->subscribe( args );
+        OscClient *subscriber = clientForAddress( message->source );
+        QByteArray path = args[0].toByteArray();
+        QList<QByteArray> names;
+        for (int i = 1; i < args.count(); ++i)
+            names << args[i].toByteArray();
+        subscriber->subscribe( path, names );
     }
     else if (path == unsubscribePath)
     {
+        if (args.count() < 2) {
+            qWarning("OscClient: unsubscribe action needs at least 2 arguments.");
+            return;
+        }
         OscClient *subscriber = findClient( message->source );
         if (subscriber) {
-            subscriber->unsubscribe(args);
+            QByteArray path = args[0].toByteArray();
+            QList<QByteArray> names;
+            for (int i = 1; i < args.count(); ++i)
+                names << args[i].toByteArray();
+            subscriber->unsubscribe(path, names);
             deleteIfUnsubscribed(subscriber);
         }
         else {

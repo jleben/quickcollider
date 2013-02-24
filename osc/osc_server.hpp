@@ -72,6 +72,7 @@ signals:
 private:
 
     void deleteIfUnsubscribed( OscClient * );
+    OscClient * clientForAddress( const OscAddress & );
 
     virtual void customEvent(QEvent* event);
 

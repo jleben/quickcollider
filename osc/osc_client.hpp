@@ -11,28 +11,31 @@
 #include <QVariant>
 #include <QHash>
 #include <QByteArray>
+#include <QPointer>
 
 class OscServer;
 class OscClient;
 class QmlOscInterface;
 
-class Notifier : public GenericSignalHandler
+
+class Notifier : protected GenericSignalHandler
 {
 public:
+    Notifier ( OscClient *client, const QByteArray & path, const QByteArray & name );
 
-    Notifier (OscClient *client, const QByteArray & path);
+    const QByteArray & path() const { return mPath; }
 
-    const QByteArray & name() { return mName; }
-    const QByteArray & path() { return mBasePath; }
+    bool connect( QObject *origin );
 
 protected:
-    virtual void invoke( const QVariantList & args );
+    void invoke( const QVariantList & args );
 
 private:
     OscClient *mClient;
-    QByteArray mBasePath;
-    QByteArray mName;
     QByteArray mPath;
+    QByteArray mFullPath;
+    QByteArray mName;
+    int mPropertyIdx;
 };
 
 class OscClient : public QObject
@@ -47,9 +50,10 @@ public:
 
     const OscAddress & address() const { return mAddress; }
 
-    void subscribe ( const QVariantList & args );
+    void subscribe ( const QByteArray & path,
+                     const QList<QByteArray> & names );
 
-    void unsubscribe ( const QVariantList & args );
+    void unsubscribe ( const QByteArray & path, const QList<QByteArray> & names );
 
     void unsubscribeAll ( const QByteArray & path );
 
@@ -62,17 +66,6 @@ private slots:
     void onInterfaceAdded ( const OscInterface & );
 
 private:
-
-    bool connect( QObject * origin, const QMetaMethod & signal, const QByteArray & basePath )
-    {
-        QByteArray path =  basePath + '/' + signal.name();
-        NotificationHash::iterator it = mNotifications.find( path );
-        if (it != mNotifications.end()) {
-            Notifier *notifier = it.value();
-            return notifier->connect( origin, signal );
-        }
-        return false;
-    }
 
     static void convertArgument( const QVariant & var, lo_message msg )
     {
