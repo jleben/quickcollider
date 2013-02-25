@@ -4,27 +4,35 @@ import QuickCollider 0.1
 Item {
     id: slider
     property int orientation: (width <= height) ? Qt.Vertical : Qt.Horizontal;
-    property var margins: {
-        var mx = knobItem.width / 2;
-        var my = knobItem.height / 2;
-        [mx, my, mx, my]
-    }
-
     property alias xValue: xModel.value
     property alias yValue: yModel.value
-
-    property Component knob:
-        Rectangle { width:15; height:15; color: knobColor }
-    property Component background:
-        Rectangle { color: backgroundColor; border.color: borderColor }
-    property Component border
+    property alias xInverted: xModel.inverted
+    property alias yInverted: yModel.inverted
+    property real knobWidth: width * 0.2
+    property real knobHeight: height * 0.2
     property color knobColor: "black"
     property color backgroundColor: "grey"
     property color borderColor: "black"
 
+    property Component knob:
+        Rectangle { color: knobColor }
+    property Component background:
+        Rectangle { color: backgroundColor; border.color: borderColor }
+    property Component border
 
-    RangeModel { id: xModel }
-    RangeModel { id: yModel }
+
+    onXValueChanged: { console.log(xValue) }
+
+    RangeModel {
+        id: xModel;
+        minimumPosition: mouseArea.x + (knobWidth / 2)
+        maximumPosition: mouseArea.x + mouseArea.width - (knobWidth / 2)
+    }
+    RangeModel {
+        id: yModel
+        minimumPosition: mouseArea.y + mouseArea.height - (knobHeight / 2)
+        maximumPosition: mouseArea.y + (knobHeight / 2)
+    }
 
     Loader {
         sourceComponent: background
@@ -38,8 +46,10 @@ Item {
     Loader {
         id: knobItem
         sourceComponent: knob
-        x: Math.floor( xValue * (slider.width - margins[0] - margins[2]) + margins[0] - (width / 2) );
-        y: Math.floor( yValue * (slider.height - margins[1] - margins[3]) + margins[1] - (height / 2) );
+        width: knobWidth
+        height: knobHeight
+        x: xModel.position - (knobWidth / 2)
+        y: yModel.position - (knobHeight / 2)
     }
 
     MouseArea {
@@ -48,10 +58,8 @@ Item {
         onPressed: updateValue(mouse)
         onPositionChanged: updateValue(mouse)
         function updateValue(mouse) {
-            var xRange = width - margins[0] - margins[2];
-            xValue = (mouse.x - margins[0]) / xRange;
-            var yRange = height - margins[1] - margins[3];
-            yValue = (mouse.y - margins[1]) / yRange;
+            xModel.position = mouse.x;
+            yModel.position = mouse.y;
         }
     }
 }

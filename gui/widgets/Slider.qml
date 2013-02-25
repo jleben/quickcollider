@@ -4,23 +4,22 @@ import QuickCollider 0.1
 Item {
     id: slider
     property int orientation: (width <= height) ? Qt.Vertical : Qt.Horizontal;
-    property var margins:
-        (orientation == Qt.Vertical) ?
-            [knobItem.height / 2, knobItem.height / 2] :
-            [knobItem.width / 2, knobItem.width / 2]
+    property alias inverted: model.inverted
     property alias value: model.value;
+    property real knobSize: height * 0.2;
 
-    property Component knob:
-        Rectangle{ width:15; height:15; color: knobColor }
-    property Component background:
-        Rectangle { color: backgroundColor; border.color: borderColor }
     property color knobColor: "black"
     property color backgroundColor: "grey"
     property color borderColor: "black"
+    property Component knob:
+        Rectangle{ color: knobColor }
+    property Component background:
+        Rectangle { color: backgroundColor; border.color: borderColor }
 
     RangeModel { id: model }
 
     Loader {
+        property alias model: model
         sourceComponent: background
         anchors.fill: parent
     }
@@ -33,47 +32,51 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        onPressed: updateValue(mouse)
-        onPositionChanged: updateValue(mouse)
-        function updateValue(mouse) {
-            var range = ((orientation == Qt.Vertical) ? height : width) - margins[0] - margins[1];
-            var pos = (orientation == Qt.Vertical) ? mouse.y : mouse.x;
-            slider.value = (pos - margins[0]) / range;
+        onPressed: setValue(mouse)
+        onPositionChanged: setValue(mouse)
+        function setValue(mouse) {
+            model.position = (orientation == Qt.Vertical) ? mouse.y : mouse.x;
         }
     }
 
-    states: [
-        State {
-            when: orientation == Qt.Vertical
-            PropertyChanges {
-                target: knobItem
-                anchors.verticalCenter: undefined
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: Math.floor (
-                       value * (slider.height - margins[0] - margins[1])
-                       + margins[0] - (height/2) )
+    StateGroup {
+        states: [
+            State {
+                when: orientation == Qt.Vertical
+                PropertyChanges {
+                    target: model
+                    minimumPosition: mouseArea.y + mouseArea.height - (knobSize / 2)
+                    maximumPosition: mouseArea.y + (knobSize / 2)
+                }
+                PropertyChanges {
+                    target: knobItem
+                    height: knobSize
+                    y: model.position - (knobSize / 2);
+                }
+                AnchorChanges {
+                    target: knobItem
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                }
+            },
+            State {
+                when: orientation == Qt.Horizontal
+                PropertyChanges {
+                    target: model
+                    minimumPosition: mouseArea.x + (knobSize / 2)
+                    maximumPosition: mouseArea.x + mouseArea.width - (knobSize / 2)
+                }
+                PropertyChanges {
+                    target: knobItem
+                    width: knobSize
+                    x: model.position - (knobSize / 2);
+                }
+                AnchorChanges {
+                    target: knobItem
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                }
             }
-            /*PropertyChanges {
-                target: mouseArea
-                onPressed: { slider.value = mouse.y / height }
-                onPositionChanged: { slider.value = mouse.y / height }
-            }*/
-        },
-        State {
-            when: orientation == Qt.Horizontal
-            PropertyChanges {
-                target: knobItem
-                anchors.horizontalCenter: undefined
-                anchors.verticalCenter: parent.verticalCenter
-                x: Math.floor(
-                       value * (slider.width - margins[0] - margins[1])
-                       + margins[0] - (width/2) );
-            }
-            /*PropertyChanges {
-                target: mouseArea
-                onPressed: { slider.value = mouse.x / width }
-                onPositionChanged: { slider.value = mouse.x / width }
-            }*/
-        }
-    ]
+        ]
+    }
 }
