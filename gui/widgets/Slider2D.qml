@@ -8,6 +8,8 @@ Item {
     property alias yValue: yModel.value
     property alias xInverted: xModel.inverted
     property alias yInverted: yModel.inverted
+    property alias xSteps: xModel.steps
+    property alias ySteps: yModel.steps
     property real knobWidth: width * 0.2
     property real knobHeight: height * 0.2
     property color knobColor: "black"

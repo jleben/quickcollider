@@ -5,6 +5,7 @@ Item {
     id: slider
     property int orientation: (width <= height) ? Qt.Vertical : Qt.Horizontal;
     property alias inverted: model.inverted
+    property alias steps: model.steps
     property alias value: model.value;
     property real knobSize: height * 0.2;
 
