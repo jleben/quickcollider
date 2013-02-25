@@ -2,7 +2,6 @@
 #include "osc_server.hpp"
 #include "qml_osc_interface.hpp"
 
-
 Notifier::Notifier( OscClient *client, const QByteArray & path, const QByteArray & name ):
     GenericSignalHandler(client),
     mClient(client),
@@ -13,48 +12,12 @@ Notifier::Notifier( OscClient *client, const QByteArray & path, const QByteArray
 
 bool Notifier::connect( QObject *object )
 {
-    // TODO: How to handle signals with same name but different arguments?
-    const QMetaObject *metaObject = object->metaObject();
-
-    int propertyIdx = metaObject->indexOfProperty( mName.constData() );
-    if (propertyIdx != -1)
-    {
-        int signalIdx = metaObject->property( propertyIdx ).notifySignalIndex();
-        if (signalIdx != -1)
-        {
-            if (GenericSignalHandler::connect( object, metaObject->method(signalIdx) )) {
-                mPropertyIdx = propertyIdx;
-                return true;
-            }
-        }
-    }
-    else
-    {
-        int signalIdx = QuickCollider::indexOfMethod(metaObject, mName, QMetaMethod::Signal);
-        if (signalIdx != -1)
-        {
-            if (GenericSignalHandler::connect( object, metaObject->method(signalIdx) )) {
-                mPropertyIdx = -1;
-                return true;
-            }
-        }
-    }
-
-    return false;
+    return GenericSignalHandler::connect(object, mName);
 }
 
 void Notifier::invoke( const QVariantList & args )
 {
-    if (mPropertyIdx == -1) {
-        mClient->send(mFullPath, args);
-    }
-    else {
-        Q_ASSERT( mOrigin );
-        QVariant arg = mOrigin->metaObject()->property( mPropertyIdx ).read( mOrigin );
-        QVariantList args;
-        args << arg;
-        mClient->send(mFullPath, args);
-    }
+    mClient->send(mFullPath, args);
 }
 
 OscClient::OscClient( const OscAddress & address, OscServer * server ):
@@ -93,6 +56,7 @@ void OscClient::subscribe ( const QByteArray & path,
         NotificationHash::iterator it = mNotifications.find(fullPath);
         if (it == mNotifications.end())
         {
+            qDebug() << "OscClient: Subscribing to:" << fullPath;
             Notifier *notifier = new Notifier(this, path, name);
             mNotifications.insert(fullPath, notifier);
             if (object)
@@ -103,7 +67,6 @@ void OscClient::subscribe ( const QByteArray & path,
                 else
                     qWarning() << "OscClient: Failed to connect:" << fullPath;
             }
-            qDebug() << "OscClient: Subscribed to:" << fullPath;
         }
         else {
             qDebug() << "OscClient: Already subscribed to:" << fullPath;
