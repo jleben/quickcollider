@@ -20,9 +20,6 @@ Item {
         Rectangle { color: backgroundColor; border.color: borderColor }
     property Component border
 
-
-    onXValueChanged: { console.log(xValue) }
-
     RangeModel {
         id: xModel;
         minimumPosition: mouseArea.x + (knobWidth / 2)
