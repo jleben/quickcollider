@@ -103,9 +103,13 @@ Item {
                 Loader {
                     property real value: model.value;
                     sourceComponent: defaultSlider
-                    height: (count > 1) ?
-                               (root.height - ((count - 1) * spacing)) / count :
-                               root.height
+                    height: sliderSize
+                    Binding on height {
+                        when: sliderSize == 0
+                        value: (count > 1) ?
+                                   (root.height - ((count - 1) * spacing)) / count :
+                                   root.height
+                    }
                     width: root.width
                 }
             }
@@ -143,6 +147,7 @@ Item {
             xOrigin = mouse.x;
             yOrigin = mouse.y;
         }
+        // FIXME: setting sliders doesn't work right without floor-ing the indexes
         function setSlidersV (mouse) {
             var origin_idx = Math.floor(xOrigin / width * multiSliderModel.count);
             var origin_val = 1 - (yOrigin / height);
