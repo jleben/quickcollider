@@ -2,6 +2,7 @@
 #include "../osc/osc_client.hpp"
 #include "../osc/qml_osc_interface.hpp"
 #include "../gui/util/range_model.hpp"
+#include "../gui/util/multi_slider_model.hpp"
 
 #include <QGuiApplication>
 #include <QQuickView>
@@ -31,6 +32,8 @@ int main(int argc, char *argv[])
             ("OSC", 0, 1, "OSC", "Cannot instantiate this object");
     qmlRegisterType<quick_collider::range_model>
             ("QuickCollider", 0, 1, "RangeModel");
+    qmlRegisterType<quick_collider::multi_slider_model>
+            ("QuickCollider", 0, 1, "MultiSliderModel");
 
     OscServer oscServer( serverPort.toLatin1() );
     oscServer.start();

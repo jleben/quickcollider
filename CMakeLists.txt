@@ -16,6 +16,7 @@ set( moc_hdr
     osc/osc_dispatcher.hpp
     osc/qml_osc_interface.hpp
     gui/util/range_model.hpp
+    gui/util/multi_slider_model.hpp
 )
 
 set( src
