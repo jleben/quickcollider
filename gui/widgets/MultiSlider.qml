@@ -31,7 +31,7 @@ Item {
         id: mSliderModel;
         count: 10;
         orientation: root.orientation
-        bounds: Qt.rect(0,0,width,height)
+        bounds: Qt.rect(0, 0, sliderArray.width, sliderArray.height)
     }
 
     Component {
@@ -137,9 +137,10 @@ Item {
     }
 
     MouseArea {
+        id: mouseArea
         property int xOrigin;
         property int yOrigin;
-        anchors.fill: sliderArray
+        anchors.fill: parent
         onPressed: {
             xOrigin = mouse.x;
             yOrigin = mouse.y;
