@@ -10,7 +10,7 @@ Item
 
     property Component pointer: defaultPointer
 
-    RangeModel { id: model }
+    SliderModel { id: model }
 
     Component {
         id: defaultPointer

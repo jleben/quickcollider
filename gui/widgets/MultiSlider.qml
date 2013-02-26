@@ -4,8 +4,8 @@ import QuickCollider 0.1
 Item {
     id: root
 
-    property alias count: multiSliderModel.count;
-    property alias step: multiSliderModel.step;
+    property alias count: mSliderModel.count;
+    property alias steps: mSliderModel.steps;
 
     property int orientation: Qt.Vertical;
     property real spacing: 1;
@@ -19,15 +19,20 @@ Item {
     signal valueChanged(int index, real value);
 
     Component.onCompleted: {
-        multiSliderModel.valueChanged.connect( valueChanged );
+        mSliderModel.valueChanged.connect( valueChanged );
     }
 
     function setValue(index, value)
     {
-        multiSliderModel.setData(index, value);
+        mSliderModel.setData(index, value);
     }
 
-    MultiSliderModel { id: multiSliderModel; count: 10 }
+    MultiSliderModel {
+        id: mSliderModel;
+        count: 10;
+        orientation: root.orientation
+        bounds: Qt.rect(0,0,width,height)
+    }
 
     Component {
         id: defaultBackground
@@ -48,12 +53,12 @@ Item {
                         when: orientation == Qt.Vertical
                         AnchorChanges {
                             target: indicator
-                            anchors.bottom: parent.bottom
                         }
                         PropertyChanges {
                             target: indicator
                             width: parent.width;
-                            height: value * parent.height;
+                            y: position;
+                            height: parent.height - position;
                         }
                     },
                     State {
@@ -63,7 +68,7 @@ Item {
                         }
                         PropertyChanges {
                             target: indicator
-                            width: value * parent.width;
+                            width: position;
                             height: parent.height;
                         }
                     }
@@ -77,8 +82,10 @@ Item {
         Row {
             spacing: root.spacing
             Repeater {
-                model: multiSliderModel
+                id: repeater
+                model: mSliderModel
                 Loader {
+                    property real position: model.position;
                     property real value: model.value;
                     sourceComponent: defaultSlider
                     width: sliderSize
@@ -99,8 +106,10 @@ Item {
         Column {
             spacing: root.spacing
             Repeater {
-                model: multiSliderModel
+                id: repeater
+                model: mSliderModel
                 Loader {
+                    property real position: model.position;
                     property real value: model.value;
                     sourceComponent: defaultSlider
                     height: sliderSize
@@ -134,33 +143,12 @@ Item {
         onPressed: {
             xOrigin = mouse.x;
             yOrigin = mouse.y;
-            if (orientation == Qt.Vertical)
-                setSlidersV(mouse)
-            else
-                setSlidersH(mouse)
+            mSliderModel.setPositions(xOrigin, yOrigin, mouse.x, mouse.y)
         }
         onPositionChanged: {
-            if (orientation == Qt.Vertical)
-                setSlidersV(mouse)
-            else
-                setSlidersH(mouse)
+            mSliderModel.setPositions(xOrigin, yOrigin, mouse.x, mouse.y)
             xOrigin = mouse.x;
             yOrigin = mouse.y;
-        }
-        // FIXME: setting sliders doesn't work right without floor-ing the indexes
-        function setSlidersV (mouse) {
-            var origin_idx = Math.floor(xOrigin / width * multiSliderModel.count);
-            var origin_val = 1 - (yOrigin / height);
-            var idx = Math.floor(mouse.x / width * multiSliderModel.count);
-            var val = 1 - (mouse.y / height);
-            multiSliderModel.setData(origin_idx, origin_val, idx, val );
-        }
-        function setSlidersH (mouse) {
-            var origin_idx = Math.floor(yOrigin / height * multiSliderModel.count);
-            var origin_val = xOrigin / width;
-            var idx = Math.floor(mouse.y / height * multiSliderModel.count);
-            var val = mouse.x / width;
-            multiSliderModel.setData(origin_idx, origin_val, idx, val );
         }
     }
 }

@@ -17,7 +17,7 @@ Item {
     property Component background:
         Rectangle { color: backgroundColor; border.color: borderColor }
 
-    RangeModel { id: model }
+    SliderModel { id: model }
 
     Loader {
         property alias model: model

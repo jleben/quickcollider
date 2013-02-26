@@ -1,11 +1,11 @@
-#ifndef QUICK_COLLIDER_RANGE_MODEL_INCLUDED
-#define QUICK_COLLIDER_RANGE_MODEL_INCLUDED
+#ifndef QUICK_COLLIDER_SLIDER_MODEL_INCLUDED
+#define QUICK_COLLIDER_SLIDER_MODEL_INCLUDED
 
 #include <QObject>
 
 namespace quick_collider {
 
-class range_model : public QObject
+class slider_model : public QObject
 {
     Q_OBJECT
     Q_PROPERTY( qreal minimum READ minimum WRITE set_minimum NOTIFY minimumChanged )
@@ -20,7 +20,7 @@ class range_model : public QObject
     Q_PROPERTY( qreal position READ position WRITE set_position NOTIFY positionChanged )
 
 public:
-    range_model( QObject * parent =  0 ):
+    slider_model( QObject * parent =  0 ):
         QObject(parent),
         m_min(0.0),
         m_max(1.0),
@@ -168,4 +168,4 @@ private:
 
 } // namespace quick_collider
 
-#endif // QUICK_COLLIDER_RANGE_MODEL_INCLUDED
+#endif // QUICK_COLLIDER_SLIDER_MODEL_INCLUDED

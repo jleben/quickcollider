@@ -22,12 +22,12 @@ Item {
         Rectangle { color: backgroundColor; border.color: borderColor }
     property Component border
 
-    RangeModel {
+    SliderModel {
         id: xModel;
         minimumPosition: mouseArea.x + (knobWidth / 2)
         maximumPosition: mouseArea.x + mouseArea.width - (knobWidth / 2)
     }
-    RangeModel {
+    SliderModel {
         id: yModel
         minimumPosition: mouseArea.y + mouseArea.height - (knobHeight / 2)
         maximumPosition: mouseArea.y + (knobHeight / 2)
