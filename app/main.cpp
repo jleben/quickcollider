@@ -10,6 +10,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QDebug>
+#include <QPalette>
 
 using namespace std;
 
@@ -40,6 +41,7 @@ int main(int argc, char *argv[])
 
     QQmlEngine engine;
     QQuickView *window = new QQuickView(&engine, 0);
+    window->setColor( app.palette().color(QPalette::Window) );
     window->setSource(QUrl::fromLocalFile(scenePath));
     window->show();
 
