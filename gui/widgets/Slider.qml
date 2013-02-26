@@ -7,21 +7,44 @@ Item {
     property alias inverted: model.inverted
     property alias steps: model.steps
     property alias value: model.value;
-    property real knobSize: height * 0.2;
+    property real knobSize: 15;
 
-    property color knobColor: "black"
+    property color knobColor: Qt.rgba(0.1,0.1,0.1)
     property color backgroundColor: "grey"
     property color borderColor: "black"
-    property Component knob:
-        Rectangle{ color: knobColor }
-    property Component background:
-        Rectangle { color: backgroundColor; border.color: borderColor }
+
+    property Component background: defaultBackground
+    property Component border: defaultBorder
+    property Component knob: defaultKnob
 
     SliderModel { id: model }
+
+    Component {
+        id: defaultBackground
+        Rectangle { color: backgroundColor }
+    }
+
+    Component {
+        id: defaultBorder
+        Rectangle {
+            color: "transparent"
+            border.color: borderColor
+        }
+    }
+
+    Component {
+        id: defaultKnob
+        Rectangle { color: knobColor }
+    }
 
     Loader {
         property alias model: model
         sourceComponent: background
+        anchors.fill: parent
+    }
+
+    Loader {
+        sourceComponent: border
         anchors.fill: parent
     }
 
@@ -33,6 +56,7 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: 1
         onPressed: setValue(mouse)
         onPositionChanged: setValue(mouse)
         function setValue(mouse) {
@@ -56,8 +80,8 @@ Item {
                 }
                 AnchorChanges {
                     target: knobItem
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+                    anchors.left: mouseArea.left
+                    anchors.right: mouseArea.right
                 }
             },
             State {
@@ -74,8 +98,8 @@ Item {
                 }
                 AnchorChanges {
                     target: knobItem
-                    anchors.top: parent.top
-                    anchors.bottom: parent.bottom
+                    anchors.top: mouseArea.top
+                    anchors.bottom: mouseArea.bottom
                 }
             }
         ]
