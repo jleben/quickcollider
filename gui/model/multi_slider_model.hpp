@@ -12,7 +12,7 @@ namespace quick_collider {
 class multi_slider_model : public QAbstractListModel
 {
     Q_OBJECT
-    Q_PROPERTY( int count READ count WRITE setCount )
+    Q_PROPERTY( int count READ count WRITE setCount NOTIFY countChanged )
     Q_PROPERTY( QRectF bounds READ bounds WRITE set_bounds NOTIFY boundsChanged )
     Q_PROPERTY( int orientation READ orientation WRITE set_orientation NOTIFY orientationChanged )
     Q_PROPERTY( int steps READ steps WRITE set_steps NOTIFY stepsChanged )
@@ -38,6 +38,7 @@ public:
         beginResetModel();
         m_data.resize(count);
         endResetModel();
+        emit countChanged(count);
     }
 
     QRectF bounds() const { return m_bounds; }
@@ -176,6 +177,7 @@ public:
     }
 
 signals:
+    void countChanged(int);
     void boundsChanged(const QRectF &);
     void orientationChanged(int);
     void stepsChanged(qreal);
