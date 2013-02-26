@@ -10,17 +10,15 @@ Item {
     property alias yInverted: yModel.inverted
     property alias xSteps: xModel.steps
     property alias ySteps: yModel.steps
-    property real knobWidth: width * 0.2
-    property real knobHeight: height * 0.2
-    property color knobColor: "black"
+    property real knobWidth: 15
+    property real knobHeight: 15
+    property color knobColor: Qt.rgba(0.1,0.1,0.1)
     property color backgroundColor: "grey"
     property color borderColor: "black"
 
-    property Component knob:
-        Rectangle { color: knobColor }
-    property Component background:
-        Rectangle { color: backgroundColor; border.color: borderColor }
-    property Component border
+    property Component background: defaultBackground
+    property Component border: defaultBorder
+    property Component knob: defaultKnob
 
     SliderModel {
         id: xModel;
@@ -31,6 +29,41 @@ Item {
         id: yModel
         minimumPosition: mouseArea.y + mouseArea.height - (knobHeight / 2)
         maximumPosition: mouseArea.y + (knobHeight / 2)
+    }
+
+    Component {
+        id: defaultBackground
+        Rectangle {
+            color: backgroundColor
+            Canvas {
+                id: canvas
+                anchors.fill: parent
+                property color strokeColor:
+                    Qt.rgba(borderColor.r, borderColor.g, borderColor.b, 0.3)
+                onPaint: {
+                    var ctx = canvas.getContext('2d');
+                    ctx.strokeStyle = canvas.strokeColor;
+                    ctx.moveTo( width / 2, 0 );
+                    ctx.lineTo( width / 2, height );
+                    ctx.moveTo( 0, height / 2 );
+                    ctx.lineTo( width, height / 2 );
+                    ctx.stroke();
+                }
+            }
+        }
+    }
+
+    Component {
+        id: defaultBorder
+        Rectangle {
+            color: "transparent"
+            border.color: borderColor
+        }
+    }
+
+    Component {
+        id: defaultKnob
+        Rectangle { color: knobColor }
     }
 
     Loader {
@@ -54,6 +87,7 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
+        anchors.margins: 1
         onPressed: updateValue(mouse)
         onPositionChanged: updateValue(mouse)
         function updateValue(mouse) {
