@@ -19,18 +19,17 @@ Item {
     property color backgroundColor: "gray"
 
     property Component slider: defaultSlider;
-
     property Component background: defaultBackground;
+
+    function set(index, value)
+    {
+        mSliderModel.setData(index, value);
+    }
 
     signal valueChanged(int index, real value);
 
     Component.onCompleted: {
         mSliderModel.valueChanged.connect( valueChanged );
-    }
-
-    function setValue(index, value)
-    {
-        mSliderModel.setData(index, value);
     }
 
     MultiSliderModel {
