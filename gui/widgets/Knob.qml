@@ -17,7 +17,7 @@ Item
         Rectangle {
             radius: Math.min(width, height) / 2
             color: "gray"
-            border.color: "black"
+            border.color: knob.activeFocus ? "blue" : "black"
             antialiasing: true
             Rectangle {
                 antialiasing: true
@@ -87,6 +87,23 @@ Item
             angle =  angle - 90;
             if (angle < 0) angle = angle + 360;
             return (angle  - 30) / 300;
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onPressed: {
+            knob.focus = true;
+            mouse.accepted = false;
+        }
+    }
+
+    Keys.onPressed: {
+        if (event.key == Qt.Key_Up) {
+            value = value + 0.1;
+        }
+        else if (event.key == Qt.Key_Down) {
+            value = value - 0.1;
         }
     }
 }
