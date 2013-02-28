@@ -12,11 +12,11 @@ Item {
 
     GraphModel {
         id: graphModel
-        area: Qt.rect(nodeMargin,
-                      nodeMargin,
+        property real margin: nodeSize / 2
+        area: Qt.rect(margin,
+                      margin,
                       globalMouseArea.width - nodeSize,
                       globalMouseArea.height - nodeSize)
-        nodeMargin: nodeSize / 2
         //onDataChanged: canvas.requestPaint();
     }
 

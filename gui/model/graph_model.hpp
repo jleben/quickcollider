@@ -145,34 +145,19 @@ class GraphModel : public QAbstractListModel
     Q_OBJECT
     Q_ENUMS( ElementStyle )
     Q_ENUMS( DataRole )
-    Q_PROPERTY( QObject * target READ target WRITE set_target )
+    //Q_PROPERTY( QObject * target READ target WRITE set_target )
     Q_PROPERTY( QRectF area READ area WRITE setArea )
-    Q_PROPERTY( qreal nodeMargin READ nodeMargin WRITE setNodeMargin NOTIFY nodeMarginChanged )
     //Q_PROPERTY( VariantList value READ value WRITE setValue )
     //Q_PROPERTY( VariantList strings READ dummyVariantList WRITE setStrings );
-    Q_PROPERTY( int index READ index WRITE setIndex )
-    Q_PROPERTY( int lastIndex READ lastIndex )
-    //Q_PROPERTY( VariantList selectionIndexes READ selectionIndexes)
-    //Q_PROPERTY( int thumbSize READ dummyInt WRITE setThumbSize );
-    //Q_PROPERTY( int thumbWidth READ dummyInt WRITE setThumbWidth );
-    //Q_PROPERTY( int thumbHeight READ dummyInt WRITE setThumbHeight );
-    //Q_PROPERTY( QColor background READ background WRITE setBackground );
-    //Q_PROPERTY( QColor strokeColor READ strokeColor WRITE setStrokeColor );
-    //Q_PROPERTY( QColor fillColor READ dummyColor WRITE setFillColor );
-    //Q_PROPERTY( QColor gridColor READ gridColor WRITE setGridColor );
-    //Q_PROPERTY( QColor focusColor READ focusColor WRITE setFocusColor );
-    //Q_PROPERTY( QColor selectionColor READ selectionColor WRITE setSelectionColor );
-    //Q_PROPERTY( bool drawLines READ dummyBool WRITE setDrawLines );
-    //Q_PROPERTY( bool drawRects READ dummyBool WRITE setDrawRects );
-    //Q_PROPERTY( ElementStyle style READ elementStyle WRITE setElementStyle );
-    //Q_PROPERTY( bool editable READ dummyBool WRITE setEditable );
+    Q_PROPERTY( bool editable READ editable WRITE setEditable );
     Q_PROPERTY( double step READ step WRITE setStep )
     Q_PROPERTY( int selectionForm READ selectionForm WRITE setSelectionForm )
     Q_PROPERTY( bool horizontalOrder READ horizontalOrder WRITE setHorizontalOrder )
+    Q_PROPERTY( int index READ index WRITE setIndex )
+    Q_PROPERTY( int lastIndex READ lastIndex )
+    //Q_PROPERTY( VariantList selectionIndexes READ selectionIndexes)
     Q_PROPERTY( float x READ currentX WRITE setCurrentX )
     Q_PROPERTY( float y READ currentY WRITE setCurrentY )
-    Q_PROPERTY( QPointF grid READ grid WRITE setGrid )
-    //Q_PROPERTY( bool gridOn READ dummyBool WRITE setGridOn );
 
 public:
     Q_INVOKABLE int addPosition( qreal x, qreal y );
@@ -191,29 +176,17 @@ public:
     Q_INVOKABLE void setStringAt( int, const QString & );
     Q_INVOKABLE void setFillColorAt( int, const QColor & );
     Q_INVOKABLE void setEditableAt( int, bool );
-    Q_INVOKABLE void setThumbHeightAt( int, int );
-    Q_INVOKABLE void setThumbWidthAt( int, int );
-    Q_INVOKABLE void setThumbSizeAt( int, int );
     Q_INVOKABLE void setCurves( double curvature );
     Q_INVOKABLE void setCurves( int type );
     //Q_INVOKABLE void setCurves( const VariantList & curves );
 
-    Q_INVOKABLE void grabSelection( qreal x, qreal y );
-    Q_INVOKABLE void moveSelection( qreal x, qreal y );
-    Q_INVOKABLE void keyPress( int key, int modifiers );
-
-public Q_SLOTS:
     Q_INVOKABLE void select( int index, bool exclusive = true );
     Q_INVOKABLE void deselect( int index );
     Q_INVOKABLE void deselectAll();
 
-Q_SIGNALS:
-    void nodeMarginChanged();
-    void action();
-    void metaAction();
-
-public:
-
+    Q_INVOKABLE void grabSelection( qreal x, qreal y );
+    Q_INVOKABLE void moveSelection( qreal x, qreal y );
+    Q_INVOKABLE void keyPress( int key, int modifiers );
 
 public:
     enum DataRole {
@@ -242,6 +215,8 @@ public:
 
 public:
     GraphModel( QObject * parent = 0);
+
+    // data
 
     virtual int rowCount(const QModelIndex & parent = QModelIndex()) const
     {
@@ -281,68 +256,34 @@ public:
         return createIndex(row, column);
     }
 
-    //VariantList value() const;
-    GraphElement *currentElement() const;
-    int index() const;
-    int lastIndex() const { return _lastIndex; }
-    //VariantList selectionIndexes() const;
-    float currentX() const;
-    float currentY() const;
-    QPointF grid() const { return _gridMetrics; }
-
     //void setValue( const VariantList & );
     //void setStrings( const VariantList &list );
-
-    void setIndex( int i );
-    void setCurrentX( float );
-    void setCurrentY( float );
-    void setThumbSize( int f );
-    void setThumbWidth( int f );
-    void setThumbHeight( int f );
-#if 0
-    const QColor & background() const
-    { return _bkg.isValid() ? _bkg : palette().color(QPalette::Base); }
-    void setBackground( const QColor &c ) { _bkg = c; /*update();*/ }
-
-    const QColor & selectionColor() const
-    { return _selectColor.isValid() ? _selectColor : palette().color(QPalette::Highlight); }
-    void setSelectionColor( const QColor &c ) { _selectColor = c; /*update();*/ }
-
-    const QColor & strokeColor() const
-    { return _strokeColor.isValid() ? _strokeColor :  palette().color(QPalette::Text); }
-    void setStrokeColor( const QColor & c ) { _strokeColor = c; /*update();*/ }
-
+    // set color to all nodes:
     void setFillColor( const QColor & c );
 
-    QColor gridColor() const
-    {
-        if(_gridColor.isValid())
-            return _gridColor;
-        else {
-            QColor c = palette().color(QPalette::Text);
-            c.setAlpha(40);
-            return c;
-        }
-    }
-    void setGridColor( const QColor & c ) { _gridColor = c; /*update();*/ }
-#endif
+    // options
 
-    ElementStyle elementStyle() const { return _style; }
-    void setElementStyle(ElementStyle s) { _style = s; _geometryDirty = true; /*update();*/ }
-    void setDrawLines( bool b ) { _drawLines = b; /*update();*/ }
-    void setDrawRects( bool b ) { _drawRects = b; /*update();*/ }
+    bool editable() const { return _editable; }
     void setEditable( bool b ) { _editable = b; /*update();*/ }
-
     double step() const { return _step; }
     void setStep( double );
     int selectionForm() const { return (int)_selectionForm; }
     void setSelectionForm( int i ) { _selectionForm = (SelectionForm) i; }
     bool horizontalOrder() const { return _xOrder == RigidOrder; }
     void setHorizontalOrder( bool );
-    void setGrid( const QPointF &pt ) { _gridMetrics = pt; /*update();*/ }
-    void setGridOn( bool b ) { _gridOn = b; /*update();*/ }
-    QSize sizeHint() const { return QSize( 200,200 ); }
-    QSize minimumSizeHint() const { return QSize( 50,50 ); }
+
+    // interaction state
+
+    //VariantList value() const;
+    GraphElement *currentElement() const;
+    int index() const;
+    int lastIndex() const { return _lastIndex; }
+    void setIndex( int i );
+    //VariantList selectionIndexes() const;
+    float currentX() const;
+    float currentY() const;
+    void setCurrentX( float );
+    void setCurrentY( float );
 
 private Q_SLOTS:
     void onElementRemoved( GraphElement *e );
@@ -378,14 +319,6 @@ private:
     void setArea( const QRectF & area )
     {
         m_area = area;
-    }
-
-    qreal nodeMargin() const { return m_node_margin; }
-
-    void setNodeMargin( qreal margin )
-    {
-        m_node_margin = margin;
-        emit nodeMarginChanged();
     }
 
     QPointF valueForPosition( const QPointF & pos ) const
@@ -435,28 +368,11 @@ private:
 
     QPointer<QObject> m_target;
     QRectF m_area;
-    qreal m_node_margin;
-
-    QColor _bkg;
-    QColor _strokeColor;
-    QColor _gridColor;
-    QColor _selectColor;
-
-    QSize _defaultThumbSize;
-    QPointF _gridMetrics;
-    bool _gridOn;
-
-    ElementStyle _style;
-    bool _drawLines;
-    bool _drawRects;
 
     bool _editable;
     double _step;
     SelectionForm _selectionForm;
     Order _xOrder;
-
-    bool _geometryDirty;
-    QSize _largestThumbSize;
 
     struct Selection {
         Selection () : cached(false), shallMove(false) {}

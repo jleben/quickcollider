@@ -69,16 +69,10 @@ void GraphData::removeAt( int i ) {
 
 GraphModel::GraphModel( QObject *parent ) :
     QAbstractListModel(parent),
-    _defaultThumbSize( QSize(18,18) ),
-    _style(DotElements),
-    _drawLines( true ),
-    _drawRects( true ),
     _editable( true ),
     _step( 0.01 ),
     _selectionForm( ElasticSelection ),
     _xOrder( NoOrder ),
-    _gridOn( false ),
-    _geometryDirty( false ),
     _lastIndex(-1)
 {
     m_role_names.insert(ValueRole, "value");
@@ -332,100 +326,16 @@ void GraphModel::setCurrentY( float f )
     //update();
 }
 
-void GraphModel::setThumbSize( int s )
+void GraphModel::setFillColor( const QColor & color )
 {
-    QSize size(s,s);
-
-    _defaultThumbSize = size;
-
     int c = _model.elementCount();
     for( int i=0; i<c; ++i ) {
         GraphElement *e = _model.elementAt(i);
-        e->size = size;
-    }
-
-    _largestThumbSize = size;
-    _geometryDirty = false;
-
-    //update();
-}
-
-void GraphModel::setThumbWidth( int w )
-{
-    _defaultThumbSize.setWidth(w);
-
-    int c = _model.elementCount();
-    for( int i=0; i<c; ++i ) {
-        GraphElement *e = _model.elementAt(i);
-        e->size.setWidth(w);
-    }
-
-    // For backward compatibility, switch to style that supports
-    // different thumb width and height:
-    _style = RectElements;
-    _largestThumbSize.setWidth(w);
-
-    //update();
-}
-
-void GraphModel::setThumbHeight( int h )
-{
-    _defaultThumbSize.setHeight(h);
-
-    int c = _model.elementCount();
-    for( int i=0; i<c; ++i ) {
-        GraphElement *e = _model.elementAt(i);
-        e->size.setHeight(h);
-    }
-
-    // For backward compatibility, switch to style that supports
-    // different thumb width and height:
-    _style = RectElements;
-    _largestThumbSize.setHeight(h);
-
-    //update();
-}
-
-void GraphModel::setThumbSizeAt( int i, int s )
-{
-    if( i < 0 || i >= _model.elementCount() ) return;
-    _model.elementAt(i)->size = QSize(s,s);
-    _geometryDirty = true;
-    //update();
-}
-
-void GraphModel::setThumbWidthAt( int i, int w )
-{
-    if( i < 0 || i >= _model.elementCount() ) return;
-    _model.elementAt(i)->size.setWidth(w);
-    // For backward compatibility, switch to style that supports
-    // different thumb width and height:
-    _style = RectElements;
-    _geometryDirty = true;
-    //update();
-}
-
-void GraphModel::setThumbHeightAt( int i, int h )
-{
-    if( i < 0 || i >= _model.elementCount() ) return;
-    _model.elementAt(i)->size.setHeight(h);
-    // For backward compatibility, switch to style that supports
-    // different thumb width and height:
-    _style = RectElements;
-    _geometryDirty = true;
-    //update();
-}
-#if 0
-void QcGraph::setFillColor( const QColor & color )
-{
-    int c = _model.elementCount();
-    for( int i=0; i<c; ++i ) {
-        QcGraphElement *e = _model.elementAt(i);
         e->fillColor = color;
     }
     //update();
 }
-#endif
+
 void GraphModel::setFillColorAt( int i, const QColor & color )
 {
     int c = _model.elementCount();
@@ -672,38 +582,6 @@ void GraphModel::moveSelected( const QPointF & dif, SelectionForm form, bool cac
 
     notifySelectionDataChanged(PositionRole);
 }
-
-#if 0
-QRect QcGraph::valueRect()
-{
-    if (_geometryDirty)
-    {
-        int w = 0;
-        int h = 0;
-        int c = _model.elementCount();
-        if (_style == RectElements)
-        {
-            for (int i = 0; i < c; ++i) {
-                QSize s = _model.elementAt(i)->size;
-                w = qMax(w, s.width());
-                h = qMax(h, s.height());
-            }
-        }
-        else
-        {
-            for (int i = 0; i < c; ++i) {
-                QSize s = _model.elementAt(i)->size;
-                w = qMax(w, qMin(s.width(), s.height()));
-            }
-            h = w;
-        }
-        _largestThumbSize = QSize(w,h);
-        _geometryDirty = false;
-    }
-
-    return marginsRect( sunkenContentsRect( rect() ), _largestThumbSize ).adjusted(1,1,-1,-1);
-}
-#endif
 
 bool GraphModel::eventFilter( QObject *object, QEvent *event )
 {
