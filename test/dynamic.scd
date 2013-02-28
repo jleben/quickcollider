@@ -1,5 +1,5 @@
 // Assuming you have started quickcollider with port 12345
-// and using the test QML scene provided in "test/scene.qml"
+// and using the test QML scene provided in "test/dynamic.qml"
 
 // Create a connection with the QML scene:
 ~gui = QuickGui(NetAddr("localhost", 12345));
