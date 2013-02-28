@@ -2,11 +2,25 @@ QuickCollider implements an OSC interface between different processes running QM
 
 At current stage, QuickCollider provides the following:
 
-- 'quickcollider' - an executable that takes 2 arguments: an OSC port, and a QML scene file. It displays the QML scene in a window, where each "OSC" element defines OSC endpoints for properties, functions and signals of another associated element (its parent, by default)
+- 'quickcollider' - an executable that displays a QML scene and runs an OSC server for communication with the scene.
 
-- SC classes that wrap OSC communication into an easy API. In order to use them, make the "sc" subfolder available to sclang for compilation.
+- A (growing) set of sound-control-related widgets as reusable QML components
 
-- Demo QML scene and corresponding SC code in the "test" subfolder
+- SC classes that wrap OSC communication into an easy API.
+
+- Couple of demo QML scenes and corresponding SC code in the "test" subfolder
+
+** How to use the QuickCollider program
+
+It takes 2 arguments: an OSC port, and a QML scene file. QML elements in the scene may set an "OSC.path" attached property to define the OSC path at which they are accessible. Thus, all their properties, methods and signals become accessible via OSC, by appending their name to the element path, e.g. "/anElement/aProperty".
+
+** How to communicate with QuickCollider from SuperCollider
+
+In order to use SuperCollider classes provided by QuickCollider, make the "sc" subfolder available to sclang for compilation.
+
+Check out the demo SuperCollider document, which contains explanation of usage...
+
+** Prerequisits
 
 QuickCollider depends on:
 
