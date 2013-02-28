@@ -97,8 +97,11 @@ Item {
                     when: orientation == Qt.Horizontal
                     PropertyChanges {
                         target: fill
-                        width: position;
                         height: parent.height;
+                        x: centered ? Math.min(0.5 * parent.width, position)
+                                    : (inverted ? position : 0)
+                        width: centered ? Math.abs(0.5 * parent.width - position)
+                                        : (inverted ? parent.width - position : position)
                     }
                     PropertyChanges {
                         target: handle

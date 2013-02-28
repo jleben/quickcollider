@@ -5,6 +5,7 @@ Item
 {
     id: knob
     property alias value: model.value
+    property alias steps: model.steps
     property int mouseMode: 0
     property real mouseSensitivity: 0.008
 
