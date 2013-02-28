@@ -75,10 +75,12 @@ GraphModel::GraphModel( QObject *parent ) :
     _xOrder( NoOrder ),
     _lastIndex(-1)
 {
-    m_role_names.insert(ValueRole, "value");
-    m_role_names.insert(PositionRole, "position");
-    m_role_names.insert(EnabledRole, "enabled");
-    m_role_names.insert(SelectedRole, "selected");
+    m_role_names.insert(NodeValue, "value");
+    m_role_names.insert(NodePosition, "position");
+    m_role_names.insert(NodeCurveType, "curveType");
+    m_role_names.insert(NodeCurvature, "curvature");
+    m_role_names.insert(NodeEditable, "editable");
+    m_role_names.insert(NodeSelected, "selected");
 
     connect( &_model, SIGNAL(removed(GraphElement*)), this, SLOT(onElementRemoved(GraphElement*)) );
 }
@@ -388,7 +390,7 @@ void GraphModel::setAllDeselected()
         bool was_selected = e->selected;
         e->selected = false;
         if (was_selected)
-            notifyDataChanged(i, SelectedRole);
+            notifyDataChanged(i, NodeSelected);
     }
     _selection.elems.clear();
 }
@@ -417,7 +419,7 @@ void GraphModel::setIndexSelected( int index, bool select )
         _selection.elems.removeAll( SelectedElement(e) );
     }
 
-    notifyDataChanged(index, SelectedRole);
+    notifyDataChanged(index, NodeSelected);
     //update();
 }
 
@@ -582,7 +584,7 @@ void GraphModel::moveSelected( const QPointF & dif, SelectionForm form, bool cac
 
     }
 
-    notifySelectionDataChanged(PositionRole);
+    notifySelectionDataChanged(NodePosition);
 }
 
 bool GraphModel::eventFilter( QObject *object, QEvent *event )

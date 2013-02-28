@@ -143,8 +143,8 @@ private:
 class GraphModel : public QAbstractListModel
 {
     Q_OBJECT
-    Q_ENUMS( ElementStyle )
-    Q_ENUMS( DataRole )
+    Q_ENUMS( SelectionForm )
+    Q_ENUMS( NodeData )
     //Q_PROPERTY( QObject * target READ target WRITE set_target )
     Q_PROPERTY( QRectF area READ area WRITE setArea )
     //Q_PROPERTY( VariantList value READ value WRITE setValue )
@@ -189,13 +189,13 @@ public:
     Q_INVOKABLE void keyPress( int key, int modifiers );
 
 public:
-    enum DataRole {
-        ValueRole = Qt::UserRole,
-        PositionRole,
-        EnabledRole,
-        SelectedRole,
-        CurveTypeRole,
-        CurvatureRole
+    enum NodeData {
+        NodeValue = Qt::UserRole,
+        NodePosition,
+        NodeCurveType,
+        NodeCurvature,
+        NodeEditable,
+        NodeSelected
     };
 
     enum SelectionForm {
@@ -206,11 +206,6 @@ public:
     enum Order {
         NoOrder,
         RigidOrder
-    };
-
-    enum ElementStyle {
-        DotElements,
-        RectElements,
     };
 
 public:
@@ -229,17 +224,17 @@ public:
 
         switch (role)
         {
-        case ValueRole:
+        case NodeValue:
             return elem->value;
-        case PositionRole:
+        case NodePosition:
             return positionForValue( elem->value );
-        case EnabledRole:
+        case NodeEditable:
             return elem->editable;
-        case SelectedRole:
+        case NodeSelected:
             return elem->selected;
-        case CurveTypeRole:
+        case NodeCurveType:
             return (int) elem->curveType;
-        case CurvatureRole:
+        case NodeCurvature:
             return elem->curvature;
         default:
             return elem->value;

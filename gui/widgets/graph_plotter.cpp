@@ -62,7 +62,7 @@ QSGNode * GraphPlotter::updatePaintNode(QSGNode * oldNode,
     for (int idx = 0; idx < count; ++idx)
     {
         QModelIndex modelIndex = model->index(idx, 0, QModelIndex());
-        QPointF point = model->data(modelIndex, GraphModel::PositionRole).value<QPointF>();
+        QPointF point = model->data(modelIndex, GraphModel::NodePosition).value<QPointF>();
         vertices[idx].set(point.x(), point.y());
     }
     node->markDirty(QSGNode::DirtyGeometry);
@@ -100,14 +100,14 @@ void GraphPlotter2::paint(QPainter * painter)
 
     QPainterPath path;
     QModelIndex modelIndex = model->index(0, 0, QModelIndex());
-    QPointF pt1 = model->data(modelIndex, GraphModel::PositionRole).value<QPointF>();
+    QPointF pt1 = model->data(modelIndex, GraphModel::NodePosition).value<QPointF>();
     for (int idx = 1; idx < count; ++idx)
     {
         QModelIndex modelIndex2 = model->index(idx, 0, QModelIndex());
 
-        QPointF pt2 = model->data(modelIndex2, GraphModel::PositionRole).value<QPointF>();
-        int type = model->data(modelIndex, GraphModel::CurveTypeRole).toInt();
-        qreal curvature = model->data(modelIndex, GraphModel::CurveTypeRole).toInt();
+        QPointF pt2 = model->data(modelIndex2, GraphModel::NodePosition).value<QPointF>();
+        int type = model->data(modelIndex, GraphModel::NodeCurveType).toInt();
+        qreal curvature = model->data(modelIndex, GraphModel::NodeCurvature).toInt();
         addConnection(path, pt1, pt2, type, curvature);
 
         modelIndex = modelIndex2;
