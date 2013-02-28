@@ -4,6 +4,11 @@ import QuickCollider 0.1
 Item {
     id: root
     property real nodeSize: 8
+    property alias horizontalOrder: graphModel.horizontalOrder
+    function add(x, y)
+    {
+        graphModel.addValue(x, y);
+    }
 
     GraphModel {
         id: graphModel
@@ -15,19 +20,27 @@ Item {
         //onDataChanged: canvas.requestPaint();
     }
 
-    Component.onCompleted: {
-        for(var i=0; i<10; ++i) {
-            graphModel.add( Qt.point( i/40 * root.width, (Math.random() * 0.5 + 0.5) * root.height ) )
-        }
-    }
-
     MouseArea {
         id: globalMouseArea
         anchors.fill: parent
         anchors.margins: 1
+        property bool grabbed: false
         onPressed: {
             root.focus = true;
-            graphModel.pressed( -1, Qt.point(mouse.x, mouse.y), mouse.buttons, mouse.modifiers )
+            if (mouse.modifiers & Qt.ControlModifier) {
+                var index = graphModel.addPosition(mouse.x, mouse.y);
+                graphModel.select(index);
+                graphModel.grabSelection(mouse.x, mouse.y);
+                grabbed = true;
+            }
+            else {
+                graphModel.deselectAll();
+                grabbed = false;
+            }
+        }
+        onPositionChanged: {
+            if (grabbed)
+                graphModel.moveSelection(mouse.x, mouse.y);
         }
     }
 
@@ -116,16 +129,32 @@ Item {
                 anchors.fill: parent
                 anchors.margins: -4
                 hoverEnabled: true
+                property bool grabbed: false
                 onPressed: {
                     var pos = mapToItem(globalMouseArea, mouse.x, mouse.y);
-                    graphModel.pressed( model.index,
-                                       Qt.point(pos.x, pos.y), mouse.buttons, mouse.modifiers )
+                    if (mouse.modifiers & Qt.ControlModifier) {
+                        mouse.accepted = false;
+                        return;
+                    }
+                    grabbed = true;
+                    if (mouse.modifiers & Qt.ShiftModifier) {
+                        if (selected) {
+                            graphModel.deselect(model.index)
+                            grabbed = false;
+                        }
+                        else
+                            graphModel.select(model.index, false)
+                    }
+                    else if (!selected) {
+                        graphModel.select(model.index, true)
+                    }
+                    if (grabbed)
+                        graphModel.grabSelection(pos.x, pos.y);
                 }
                 onPositionChanged: {
-                    if (mouse.buttons) {
+                    if (mouse.buttons && grabbed) {
                         var pos = mapToItem(globalMouseArea, mouse.x, mouse.y);
-                        graphModel.moved( model.index,
-                                         Qt.point(pos.x, pos.y), mouse.buttons, mouse.modifiers )
+                        graphModel.moveSelection(pos.x, pos.y);
                     }
                 }
             }

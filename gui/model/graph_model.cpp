@@ -36,6 +36,21 @@ void GraphData::append( GraphElement * e ) {
     Q_EMIT( appended(e) );
 }
 
+void GraphData::insert( int index, GraphElement * e )
+{
+    _elems.insert(index, e);
+    if (index > 0) {
+        _elems[index-1]->_next = e;
+        e->_prev = _elems[index-1];
+    }
+    if (index < _elems.count() - 1)
+    {
+        _elems[index+1]->_prev = e;
+        e->_next = _elems[index+1];
+    }
+    Q_EMIT( appended(e) );
+}
+
 void GraphData::removeAt( int i ) {
     GraphElement *e = _elems[i];
     int ci = _conns.count();
@@ -72,9 +87,38 @@ GraphModel::GraphModel( QObject *parent ) :
     m_role_names.insert(SelectedRole, "selected");
 
     connect( &_model, SIGNAL(removed(GraphElement*)), this, SLOT(onElementRemoved(GraphElement*)) );
-
-    qDebug() << "parent:" << parent;
 }
+
+int GraphModel::addPosition( qreal x, qreal y )
+{
+    QPointF value = valueForPosition( QPointF(x,y) );
+    return addValue( value.x(), value.y() );
+}
+
+int GraphModel::addValue( qreal x, qreal y )
+{
+    GraphElement *e = new GraphElement( QPointF(x,y) );
+    if (_xOrder == RigidOrder) {
+        int count = _model.elementCount();
+        int idx = 0;
+        for (; idx < count; ++idx) {
+            if (_model.elementAt(idx)->value.x() > x)
+                break;
+        }
+        beginInsertRows( QModelIndex(), idx, idx );
+        _model.insert(idx, e);
+        endInsertRows();
+        return idx;
+    }
+    else {
+        int idx = _model.elementCount();
+        beginInsertRows( QModelIndex(), idx, idx );
+        _model.append(e);
+        endInsertRows();
+        return idx;
+    }
+}
+
 #if 0
 VariantList QcGraph::value() const
 {
@@ -97,26 +141,6 @@ VariantList QcGraph::value() const
 GraphElement *GraphModel::currentElement() const
 {
     return _selection.count() ? _selection.elems.first().elem : 0;
-}
-
-void GraphModel::add( QPointF pos )
-{
-    GraphElement *e = new GraphElement( valueForPosition(pos) );
-    e->curveType = GraphElement::Sine;
-
-    beginInsertRows( QModelIndex(), _model.elementCount(), _model.elementCount() );
-    _model.append( e );
-    endInsertRows();
-}
-
-void GraphModel::move( int index, QPointF pos )
-{
-    if (index < 0 || index >= _model.elementCount())
-        return;
-
-    moveFree( _model.elementAt(index), valueForPosition(pos) );
-    emit dataChanged( createIndex(index, 0),
-                      createIndex(index, 0) );
 }
 
 int GraphModel::index() const
@@ -267,14 +291,12 @@ void GraphModel::select( int i, bool exclusive ) {
     if( i >= 0 && i < _model.elementCount() ) {
         if( exclusive ) setAllDeselected();
         setIndexSelected( i, true );
-        //update();
     }
 }
 
 void GraphModel::deselect( int i ) {
     if( i >= 0 && i < _model.elementCount() ) {
         setIndexSelected( i, false );
-        //update();
     }
 }
 
@@ -433,9 +455,9 @@ void GraphModel::setStep( double step )
     };
 }
 
-void GraphModel::setHorizontalOrder( int i ) {
-    _xOrder = (Order) i;
-    if( _xOrder != NoOrder ) {
+void GraphModel::setHorizontalOrder(bool on) {
+    _xOrder = on ? RigidOrder : NoOrder;
+    if( _xOrder == RigidOrder ) {
         ensureOrder();
         //update();
     }
@@ -707,58 +729,16 @@ bool GraphModel::eventFilter( QObject *object, QEvent *event )
     }
 }
 
-void GraphModel::pressed( int index, QPointF pos, int buttons, int modifiers )
+void GraphModel::grabSelection( qreal x, qreal y )
 {
-    if (modifiers & Qt::ControlModifier) {
-        add( pos );
-        select( _model.elementCount() );
-        _selection.shallMove = false;
-        return;
-    }
-
-    if (index != -1)
-    {
-        GraphElement *e = _model.elementAt(index);
-
-            if( modifiers & Qt::ShiftModifier ) {
-                setIndexSelected( index, !e->selected );
-            }
-            else {
-                if( !e->selected ) {
-                    setAllDeselected();
-                    setIndexSelected( index, true );
-                }
-            }
-
-            _selection.cached = false;
-            if( e->selected ) {
-                // if the element that was hit ended up selected
-                // prepare for moving
-                _selection.shallMove = true;
-                _selection.moveOrigin = valueForPosition(pos);
-            }
-            else {
-                _selection.shallMove = false;
-            }
-
-            //update();
-            return;
-    }
-
-    _selection.shallMove = false;
-
-    if( !(modifiers & Qt::ShiftModifier) ) {
-        setAllDeselected();
-    }
-
-    //update();
+    QPointF value = valueForPosition( QPointF(x,y) );
+    _selection.cached = false;
+    _selection.moveOrigin = value;
 }
 
-void GraphModel::moved( int index, QPointF pos, int buttons, int modifiers )
+void GraphModel::moveSelection( qreal x, qreal y )
 {
-    if( !buttons ) return;
-
-    if( !_editable || !_selection.shallMove || !_selection.size() ) return;
+    if( !_editable || !_selection.size() ) return;
 
     if( !_selection.cached ) {
         int c = _selection.count();
@@ -769,11 +749,9 @@ void GraphModel::moved( int index, QPointF pos, int buttons, int modifiers )
         _selection.cached = true;
     }
 
-    QPointF value_dif = valueForPosition( pos ) - _selection.moveOrigin;
+    QPointF value_dif = valueForPosition( QPointF(x,y) ) - _selection.moveOrigin;
 
     moveSelected( value_dif, _selectionForm, true );
-
-    //update();
 }
 
 void GraphModel::keyPress( int key, int mods )

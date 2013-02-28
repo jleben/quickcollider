@@ -113,6 +113,8 @@ public:
 
     void append( GraphElement * e );
 
+    void insert( int index, GraphElement * );
+
     void removeAt( int i );
 
     inline QList<Connection> connections() const { return _conns; }
@@ -166,15 +168,15 @@ class GraphModel : public QAbstractListModel
     //Q_PROPERTY( bool editable READ dummyBool WRITE setEditable );
     Q_PROPERTY( double step READ step WRITE setStep )
     Q_PROPERTY( int selectionForm READ selectionForm WRITE setSelectionForm )
-    Q_PROPERTY( int horizontalOrder READ horizontalOrder WRITE setHorizontalOrder )
+    Q_PROPERTY( bool horizontalOrder READ horizontalOrder WRITE setHorizontalOrder )
     Q_PROPERTY( float x READ currentX WRITE setCurrentX )
     Q_PROPERTY( float y READ currentY WRITE setCurrentY )
     Q_PROPERTY( QPointF grid READ grid WRITE setGrid )
     //Q_PROPERTY( bool gridOn READ dummyBool WRITE setGridOn );
 
 public:
-    Q_INVOKABLE void add( QPointF pos );
-    Q_INVOKABLE void move( int, QPointF pos );
+    Q_INVOKABLE int addPosition( qreal x, qreal y );
+    Q_INVOKABLE int addValue( qreal x, qreal y );
 
     Q_INVOKABLE int count() { return _model.elementCount(); }
     Q_INVOKABLE QVariant data( int index, int role )
@@ -196,8 +198,8 @@ public:
     Q_INVOKABLE void setCurves( int type );
     //Q_INVOKABLE void setCurves( const VariantList & curves );
 
-    Q_INVOKABLE void pressed( int index, QPointF pos, int buttons, int modifiers );
-    Q_INVOKABLE void moved( int index, QPointF pos, int buttons, int modifiers );
+    Q_INVOKABLE void grabSelection( qreal x, qreal y );
+    Q_INVOKABLE void moveSelection( qreal x, qreal y );
     Q_INVOKABLE void keyPress( int key, int modifiers );
 
 public Q_SLOTS:
@@ -335,8 +337,8 @@ public:
     void setStep( double );
     int selectionForm() const { return (int)_selectionForm; }
     void setSelectionForm( int i ) { _selectionForm = (SelectionForm) i; }
-    int horizontalOrder() const { return (int)_xOrder; }
-    void setHorizontalOrder( int i );
+    bool horizontalOrder() const { return _xOrder == RigidOrder; }
+    void setHorizontalOrder( bool );
     void setGrid( const QPointF &pt ) { _gridMetrics = pt; /*update();*/ }
     void setGridOn( bool b ) { _gridOn = b; /*update();*/ }
     QSize sizeHint() const { return QSize( 200,200 ); }
