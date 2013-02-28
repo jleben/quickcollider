@@ -7,15 +7,15 @@
 
 #include <vector>
 
-namespace quick_collider {
+namespace QuickCollider {
 
-class multi_slider_model : public QAbstractListModel
+class MultiSliderModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY( int count READ count WRITE setCount NOTIFY countChanged )
-    Q_PROPERTY( QRectF bounds READ bounds WRITE set_bounds NOTIFY boundsChanged )
-    Q_PROPERTY( int orientation READ orientation WRITE set_orientation NOTIFY orientationChanged )
-    Q_PROPERTY( int steps READ steps WRITE set_steps NOTIFY stepsChanged )
+    Q_PROPERTY( QRectF bounds READ bounds WRITE setBounds NOTIFY boundsChanged )
+    Q_PROPERTY( int orientation READ orientation WRITE setOrientation NOTIFY orientationChanged )
+    Q_PROPERTY( int steps READ steps WRITE setSteps NOTIFY stepsChanged )
 
 public:
 
@@ -24,7 +24,7 @@ public:
         PositionRole
     };
 
-    multi_slider_model( QObject * parent = 0):
+    MultiSliderModel( QObject * parent = 0):
         QAbstractListModel(parent)
     {
         m_role_names.insert(ValueRole, "value");
@@ -43,7 +43,7 @@ public:
 
     QRectF bounds() const { return m_bounds; }
 
-    void set_bounds( const QRectF & bounds )
+    void setBounds( const QRectF & bounds )
     {
         if (bounds == m_bounds)
             return;
@@ -54,7 +54,7 @@ public:
 
     int orientation() const { return m_orientation; }
 
-    void set_orientation( int arg )
+    void setOrientation( int arg )
     {
         Qt::Orientation orientation = arg == 2 ? Qt::Vertical : Qt::Horizontal;
         if (orientation == m_orientation)
@@ -66,7 +66,7 @@ public:
 
     qreal steps() const { return m_steps; }
 
-    void set_steps( qreal steps )
+    void setSteps( qreal steps )
     {
         if (steps == m_steps)
             return;
@@ -246,6 +246,6 @@ private:
     std::vector<qreal> m_data;
 };
 
-} // namespace quick_collider
+} // namespace QuickCollider
 
 #endif // QUICK_COLLIDER_MULTI_SLIDER_MODEL_INCLUDED

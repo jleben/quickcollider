@@ -3,24 +3,24 @@
 
 #include <QObject>
 
-namespace quick_collider {
+namespace QuickCollider {
 
-class slider_model : public QObject
+class SliderModel : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY( qreal minimum READ minimum WRITE set_minimum NOTIFY minimumChanged )
-    Q_PROPERTY( qreal maximum READ maximum WRITE set_maximum NOTIFY maximumChanged )
-    Q_PROPERTY( qreal minimumPosition READ minimum_position WRITE set_minimum_position
+    Q_PROPERTY( qreal minimum READ minimum WRITE setMinimum NOTIFY minimumChanged )
+    Q_PROPERTY( qreal maximum READ maximum WRITE setMaximum NOTIFY maximumChanged )
+    Q_PROPERTY( qreal minimumPosition READ minimumPosition WRITE setMinimumPosition
                 NOTIFY minimumPositionChanged )
-    Q_PROPERTY( qreal maximumPosition READ maximum_position WRITE set_maximum_position
+    Q_PROPERTY( qreal maximumPosition READ maximumPosition WRITE setMaximumPosition
                 NOTIFY maximumPositionChanged )
-    Q_PROPERTY( int steps READ steps WRITE set_steps NOTIFY stepsChanged )
-    Q_PROPERTY( bool inverted READ inverted WRITE set_inverted NOTIFY invertedChanged )
-    Q_PROPERTY( qreal value READ value WRITE set_value NOTIFY valueChanged )
-    Q_PROPERTY( qreal position READ position WRITE set_position NOTIFY positionChanged )
+    Q_PROPERTY( int steps READ steps WRITE setSteps NOTIFY stepsChanged )
+    Q_PROPERTY( bool inverted READ inverted WRITE setInverted NOTIFY invertedChanged )
+    Q_PROPERTY( qreal value READ value WRITE setValue NOTIFY valueChanged )
+    Q_PROPERTY( qreal position READ position WRITE setPosition NOTIFY positionChanged )
 
 public:
-    slider_model( QObject * parent =  0 ):
+    SliderModel( QObject * parent =  0 ):
         QObject(parent),
         m_min(0.0),
         m_max(1.0),
@@ -33,34 +33,34 @@ public:
 
     qreal minimum() const { return m_min; }
     qreal maximum() const { return m_max; }
-    qreal minimum_position() const { return m_min_pos; }
-    qreal maximum_position() const { return m_max_pos; }
+    qreal minimumPosition() const { return m_min_pos; }
+    qreal maximumPosition() const { return m_max_pos; }
     int steps() const { return m_steps; }
     bool inverted() const { return m_inverted; }
     qreal value() const { return m_value; }
     qreal position() const { return position_for_value(m_value); }
 
-    void set_minimum( qreal minimum )
+    void setMinimum( qreal minimum )
     {
         if (minimum == m_min)
             return;
 
         m_min = minimum;
         emit minimumChanged(m_min);
-        set_value(m_value);
+        setValue(m_value);
     }
 
-    void set_maximum( qreal maximum )
+    void setMaximum( qreal maximum )
     {
         if (maximum == m_max)
             return;
 
         m_max = maximum;
         emit maximumChanged(m_max);
-        set_value(m_value);
+        setValue(m_value);
     }
 
-    void set_minimum_position( qreal min_pos )
+    void setMinimumPosition( qreal min_pos )
     {
         if (min_pos == m_min_pos)
             return;
@@ -70,7 +70,7 @@ public:
         emit positionChanged( position() );
     }
 
-    void set_maximum_position( qreal max_pos )
+    void setMaximumPosition( qreal max_pos )
     {
         if(max_pos == m_max_pos)
             return;
@@ -79,17 +79,17 @@ public:
         emit positionChanged( position() );
     }
 
-    void set_steps( int steps )
+    void setSteps( int steps )
     {
         if (steps == m_steps)
             return;
 
         m_steps = steps;
         emit stepsChanged(m_steps);
-        set_value( m_value );
+        setValue( m_value );
     }
 
-    void set_value( qreal value )
+    void setValue( qreal value )
     {
         value = restricted_value(value);
         if (value != m_value) {
@@ -99,12 +99,12 @@ public:
         }
     }
 
-    void set_position( qreal pos )
+    void setPosition( qreal pos )
     {
-        set_value( value_for_position(pos) );
+        setValue( value_for_position(pos) );
     }
 
-    void set_inverted( bool inverted )
+    void setInverted( bool inverted )
     {
         if (inverted == m_inverted)
             return;
@@ -166,6 +166,6 @@ private:
     qreal m_value;
 };
 
-} // namespace quick_collider
+} // namespace QuickCollider
 
 #endif // QUICK_COLLIDER_SLIDER_MODEL_INCLUDED

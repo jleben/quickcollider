@@ -33,9 +33,9 @@ int main(int argc, char *argv[])
 
     qmlRegisterUncreatableType<QmlOscInterface>
             ("OSC", 0, 1, "OSC", "Cannot instantiate this object");
-    qmlRegisterType<quick_collider::slider_model>
+    qmlRegisterType<QuickCollider::SliderModel>
             ("QuickCollider", 0, 1, "SliderModel");
-    qmlRegisterType<quick_collider::multi_slider_model>
+    qmlRegisterType<QuickCollider::MultiSliderModel>
             ("QuickCollider", 0, 1, "MultiSliderModel");
     qmlRegisterType<QuickCollider::GraphModel>
             ("QuickCollider", 0, 1, "GraphModel");
