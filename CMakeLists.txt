@@ -17,6 +17,8 @@ set( moc_hdr
     osc/qml_osc_interface.hpp
     gui/model/slider_model.hpp
     gui/model/multi_slider_model.hpp
+    gui/model/graph_model.hpp
+    gui/widgets/graph_plotter.hpp
 )
 
 set( src
@@ -25,6 +27,8 @@ set( src
     osc/osc_client.cpp
     osc/osc_dispatcher.cpp
     osc/qml_osc_interface.cpp
+    gui/model/graph_model.cpp
+    gui/widgets/graph_plotter.cpp
 )
 
 qt5_wrap_cpp( moc_src ${moc_hdr} )
