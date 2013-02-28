@@ -196,8 +196,8 @@ public:
     Q_INVOKABLE void setCurves( int type );
     //Q_INVOKABLE void setCurves( const VariantList & curves );
 
-    Q_INVOKABLE void mousePress( QPointF pos, int buttons, int modifiers );
-    Q_INVOKABLE void mouseMove( QPointF pos, int buttons, int modifiers );
+    Q_INVOKABLE void pressed( int index, QPointF pos, int buttons, int modifiers );
+    Q_INVOKABLE void moved( int index, QPointF pos, int buttons, int modifiers );
     Q_INVOKABLE void keyPress( int key, int modifiers );
 
 public Q_SLOTS:

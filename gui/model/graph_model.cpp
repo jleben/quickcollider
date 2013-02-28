@@ -707,7 +707,7 @@ bool GraphModel::eventFilter( QObject *object, QEvent *event )
     }
 }
 
-void GraphModel::mousePress( QPointF pos, int buttons, int modifiers )
+void GraphModel::pressed( int index, QPointF pos, int buttons, int modifiers )
 {
     if (modifiers & Qt::ControlModifier) {
         add( pos );
@@ -716,25 +716,17 @@ void GraphModel::mousePress( QPointF pos, int buttons, int modifiers )
         return;
     }
 
-    QList<GraphElement*> elems = _model.elements();
-    int c = elems.count();
-    if( !c ) return;
-
-    int i;
-    for( i = 0; i < c; ++i )
+    if (index != -1)
     {
-        GraphElement *e = elems[i];
-        QPointF pt = positionForValue( e->value );
-        if( qAbs(pt.x() - pos.x()) <= m_node_margin &&
-                qAbs(pt.y() - pos.y()) <= m_node_margin )
-        {
+        GraphElement *e = _model.elementAt(index);
+
             if( modifiers & Qt::ShiftModifier ) {
-                setIndexSelected( i, !e->selected );
+                setIndexSelected( index, !e->selected );
             }
             else {
                 if( !e->selected ) {
                     setAllDeselected();
-                    setIndexSelected( i, true );
+                    setIndexSelected( index, true );
                 }
             }
 
@@ -751,7 +743,6 @@ void GraphModel::mousePress( QPointF pos, int buttons, int modifiers )
 
             //update();
             return;
-        }
     }
 
     _selection.shallMove = false;
@@ -763,7 +754,7 @@ void GraphModel::mousePress( QPointF pos, int buttons, int modifiers )
     //update();
 }
 
-void GraphModel::mouseMove( QPointF pos, int buttons, int modifiers )
+void GraphModel::moved( int index, QPointF pos, int buttons, int modifiers )
 {
     if( !buttons ) return;
 

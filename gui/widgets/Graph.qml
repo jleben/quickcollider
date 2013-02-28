@@ -3,11 +3,14 @@ import QuickCollider 0.1
 
 Item {
     id: root
-    property real nodeSize: 16
+    property real nodeSize: 8
 
     GraphModel {
         id: graphModel
-        area: Qt.rect( nodeMargin, nodeMargin, mouseArea.width - nodeSize, mouseArea.height - nodeSize )
+        area: Qt.rect(nodeMargin,
+                      nodeMargin,
+                      globalMouseArea.width - nodeSize,
+                      globalMouseArea.height - nodeSize)
         nodeMargin: nodeSize / 2
         //onDataChanged: canvas.requestPaint();
     }
@@ -19,16 +22,12 @@ Item {
     }
 
     MouseArea {
-        id: mouseArea
-        property int pressedIndex: -1
+        id: globalMouseArea
         anchors.fill: parent
         anchors.margins: 1
         onPressed: {
             root.focus = true;
-            graphModel.mousePress( Qt.point(mouse.x, mouse.y), mouse.buttons, mouse.modifiers )
-        }
-        onPositionChanged: {
-            graphModel.mouseMove( Qt.point(mouse.x, mouse.y), mouse.buttons, mouse.modifiers )
+            graphModel.pressed( -1, Qt.point(mouse.x, mouse.y), mouse.buttons, mouse.modifiers )
         }
     }
 
@@ -77,22 +76,67 @@ Item {
         }
     }
 */
+    Component {
+        id: node
+        Rectangle {
+            id: circle
+            antialiasing: true
+            width: nodeSize
+            height: nodeSize
+            color: "black"
+            radius: nodeSize / 2
+            x: position.x - radius
+            y: position.y - radius
+            Rectangle {
+                id: ring
+                antialiasing: true
+                anchors.fill: parent
+                anchors.margins: -2
+                radius: width / 2
+                color: "transparent"
+                border.color: "blue"
+                border.width: 2
+                opacity: 0.0
+                states: [
+                    State {
+                        when: selected
+                        PropertyChanges { target: ring; opacity: 1.0 }
+                    },
+                    State {
+                        when: mouseArea.containsMouse
+                        PropertyChanges { target: ring; opacity: 0.5 }
+                    }
+                ]
+                transitions: Transition {
+                    NumberAnimation { properties:"opacity"; duration: 180 }
+                }
+            }
+            MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                anchors.margins: -4
+                hoverEnabled: true
+                onPressed: {
+                    var pos = mapToItem(globalMouseArea, mouse.x, mouse.y);
+                    graphModel.pressed( model.index,
+                                       Qt.point(pos.x, pos.y), mouse.buttons, mouse.modifiers )
+                }
+                onPositionChanged: {
+                    if (mouse.buttons) {
+                        var pos = mapToItem(globalMouseArea, mouse.x, mouse.y);
+                        graphModel.moved( model.index,
+                                         Qt.point(pos.x, pos.y), mouse.buttons, mouse.modifiers )
+                    }
+                }
+            }
+        }
+    }
+
     Item {
-        anchors.fill: mouseArea
+        anchors.fill: globalMouseArea
         Repeater {
             model: graphModel
-            Rectangle {
-                property int index: model.index
-                antialiasing: true
-                width: nodeSize
-                height: nodeSize
-                color: "black"
-                border.color: "blue"
-                border.width: selected ? 1 : 0
-                radius: nodeSize / 2
-                x: position.x - radius
-                y: position.y - radius
-            }
+            delegate: node
         }
     }
 }
