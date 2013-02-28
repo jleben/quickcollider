@@ -24,6 +24,7 @@ Item {
         anchors.fill: parent
         anchors.margins: 1
         onPressed: {
+            root.focus = true;
             graphModel.mousePress( Qt.point(mouse.x, mouse.y), mouse.buttons, mouse.modifiers )
         }
         onPositionChanged: {
@@ -31,11 +32,15 @@ Item {
         }
     }
 
+    Keys.onPressed: {
+        graphModel.keyPress( event.key, event.modifiers );
+    }
+
     Rectangle {
         id: background
         anchors.fill: parent
         color: "gray"
-        border.color: "black"
+        border.color: root.activeFocus ? "blue" : "black"
     }
 
     GraphPlotter2 {

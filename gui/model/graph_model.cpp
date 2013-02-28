@@ -785,9 +785,8 @@ void GraphModel::mouseMove( QPointF pos, int buttons, int modifiers )
     //update();
 }
 
-void GraphModel::keyPressEvent( QKeyEvent *event )
+void GraphModel::keyPress( int key, int mods )
 {
-    int mods = event->modifiers();
     if( mods & Qt::AltModifier || mods & Qt::ShiftModifier )
     {
         // selection mode
@@ -795,7 +794,7 @@ void GraphModel::keyPressEvent( QKeyEvent *event )
         int c = _model.elementCount();
         if(!c) return;
 
-        switch( event->key() ) {
+        switch( key ) {
         case Qt::Key_Right:
         {
             // select the index after the last selected one (wrapping)
@@ -809,7 +808,7 @@ void GraphModel::keyPressEvent( QKeyEvent *event )
                 }
             }
 
-            if( event->modifiers() & Qt::ShiftModifier ) {
+            if( mods & Qt::ShiftModifier ) {
                 i = qMin(i + 1, c - 1);
                 setIndexSelected( i, true );
             }
@@ -834,7 +833,7 @@ void GraphModel::keyPressEvent( QKeyEvent *event )
                 }
             }
 
-            if( event->modifiers() & Qt::ShiftModifier ) {
+            if( mods & Qt::ShiftModifier ) {
                 i = qMax(i - 1, 0);
                 setIndexSelected( i, true );
             }
@@ -858,7 +857,7 @@ void GraphModel::keyPressEvent( QKeyEvent *event )
 
         QPointF dValue;
 
-        switch( event->key() ) {
+        switch( key ) {
         case Qt::Key_Up:
             dValue.setY( _step );
             break;

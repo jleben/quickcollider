@@ -198,6 +198,7 @@ public:
 
     Q_INVOKABLE void mousePress( QPointF pos, int buttons, int modifiers );
     Q_INVOKABLE void mouseMove( QPointF pos, int buttons, int modifiers );
+    Q_INVOKABLE void keyPress( int key, int modifiers );
 
 public Q_SLOTS:
     Q_INVOKABLE void select( int index, bool exclusive = true );
@@ -388,13 +389,13 @@ private:
     QPointF valueForPosition( const QPointF & pos ) const
     {
         return QPointF ( (pos.x() - m_area.x()) / m_area.width(),
-                         (pos.y() - m_area.y()) / m_area.height() );
+                         1.0 - (pos.y() - m_area.y()) / m_area.height() );
     }
 
     QPointF positionForValue( const QPointF & val ) const
     {
         return QPointF ( val.x() * m_area.width() + m_area.x(),
-                         val.y() * m_area.height() + m_area.x() );
+                         (1.0 - val.y()) * m_area.height() + m_area.x() );
     }
 
     void notifySelectionDataChanged(int role)
@@ -426,9 +427,6 @@ private:
     void moveSelected( const QPointF & dValue, SelectionForm, bool fromCache );
 
     bool eventFilter( QObject *, QEvent * );
-//    void mousePressEvent( QMouseEvent * );
-//    void mouseMoveEvent( QMouseEvent * );
-    void keyPressEvent( QKeyEvent * );
 
     GraphData _model;
     QHash<int, QByteArray> m_role_names;
