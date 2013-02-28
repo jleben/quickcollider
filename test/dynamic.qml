@@ -30,7 +30,7 @@ Item {
             anchors.centerIn: parent
             font.pointSize: 15
 
-            color: Qt.rgba(0.8,0.8,0.8,1);
+            color: Qt.rgba(0,0,0,0.4);
             text: "Add an item, then click here..."
         }
 
