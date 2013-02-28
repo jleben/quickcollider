@@ -5,9 +5,14 @@ Item {
     id: root
     property real nodeSize: 8
     property alias horizontalOrder: graphModel.horizontalOrder
+    property alias count: graphModel.count
     function add(x, y)
     {
         graphModel.addValue(x, y);
+    }
+    function set(index, x, y)
+    {
+        graphModel.setValue(index, x, y);
     }
 
     GraphModel {

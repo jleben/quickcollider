@@ -117,6 +117,14 @@ int GraphModel::addValue( qreal x, qreal y )
     }
 }
 
+void GraphModel::setValue(int index, qreal x, qreal y)
+{
+    if (index < 0 || index >= count())
+        return;
+    setValue( _model.elementAt(index), QPointF(x,y) );
+    notifyDataChanged(index, QVector<int>() << NodeValue << NodePosition);
+}
+
 #if 0
 VariantList QcGraph::value() const
 {
@@ -584,7 +592,7 @@ void GraphModel::moveSelected( const QPointF & dif, SelectionForm form, bool cac
 
     }
 
-    notifySelectionDataChanged(NodePosition);
+    notifySelectionDataChanged(QVector<int>() << NodeValue << NodePosition);
 }
 
 bool GraphModel::eventFilter( QObject *object, QEvent *event )

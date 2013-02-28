@@ -147,6 +147,7 @@ class GraphModel : public QAbstractListModel
     Q_ENUMS( NodeData )
     //Q_PROPERTY( QObject * target READ target WRITE set_target )
     Q_PROPERTY( QRectF area READ area WRITE setArea )
+    Q_PROPERTY( int count READ count )
     //Q_PROPERTY( VariantList value READ value WRITE setValue )
     //Q_PROPERTY( VariantList strings READ dummyVariantList WRITE setStrings );
     Q_PROPERTY( bool editable READ editable WRITE setEditable );
@@ -160,10 +161,12 @@ class GraphModel : public QAbstractListModel
     Q_PROPERTY( float y READ currentY WRITE setCurrentY )
 
 public:
+    int count() const { return _model.elementCount(); }
+
     Q_INVOKABLE int addPosition( qreal x, qreal y );
     Q_INVOKABLE int addValue( qreal x, qreal y );
+    Q_INVOKABLE void setValue(int index, qreal x, qreal y);
 
-    Q_INVOKABLE int count() { return _model.elementCount(); }
     Q_INVOKABLE QVariant data( int index, int role )
     {
         if (index < 0 || index >= _model.elementCount() )
@@ -330,20 +333,30 @@ private:
 
     void notifySelectionDataChanged(int role)
     {
+        notifySelectionDataChanged( QVector<int>(1, role) );
+    }
+
+    void notifySelectionDataChanged(QVector<int> roles)
+    {
         int count = _model.elementCount();
         for (int idx = 0; idx < count; ++idx)
         {
             if (_model.elementAt(idx)->selected) {
                 QModelIndex modelIndex = createIndex(idx, 0);
-                emit dataChanged( modelIndex, modelIndex, QVector<int>(1, role) );
+                emit dataChanged( modelIndex, modelIndex, roles );
             }
         }
     }
 
-    void notifyDataChanged(int index, int role)
+    void notifyDataChanged(int index, QVector<int> roles)
     {
         QModelIndex modelIndex = createIndex(index, 0);
-        emit dataChanged( modelIndex, modelIndex, QVector<int>(1, role) );
+        emit dataChanged( modelIndex, modelIndex, roles );
+    }
+
+    void notifyDataChanged(int index, int role)
+    {
+        notifyDataChanged(index, QVector<int>(1, role));
     }
 
     void setAllDeselected();
