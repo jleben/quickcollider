@@ -91,12 +91,14 @@ int GraphModel::addPosition( qreal x, qreal y )
 
 int GraphModel::addValue( qreal x, qreal y )
 {
-    GraphElement *e = new GraphElement( QPointF(x,y) );
+    QPointF value(x,y);
+    restrictValue( value );
+    GraphElement *e = new GraphElement(value);
     if (_xOrder == RigidOrder) {
         int count = _model.elementCount();
         int idx = 0;
         for (; idx < count; ++idx) {
-            if (_model.elementAt(idx)->value.x() > x)
+            if (_model.elementAt(idx)->value.x() > value.x())
                 break;
         }
         beginInsertRows( QModelIndex(), idx, idx );
