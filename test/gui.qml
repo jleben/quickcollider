@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import OSC 0.1
+import QuickCollider 0.1
 import "../gui/widgets"
 
 Item {
@@ -18,8 +19,8 @@ Item {
 
             Slider2D {
                 OSC.path: "/slider2D"
-                width:100;
-                height:100;
+                width:150;
+                height:150;
                 knobWidth: 10
                 knobHeight: 10
                 //backgroundColor: Qt.rgba(0.7,0,0)
@@ -29,7 +30,7 @@ Item {
             Slider {
                 OSC.path: "/slider"
                 width: 30;
-                height: 100
+                height: 150
                 knobSize: 10
                 // default orientation automatically chosen according to width/height
                 //orientation: Qt.Vertical
@@ -41,6 +42,15 @@ Item {
                 height: 100;
                 //mouseMode:1;
                 //mouseSensitivity: 0.002
+            }
+
+            Oscilloscope {
+                OSC.path: "/scope"
+                width: 200
+                height: 150
+                //plotColors: ["red", "orange"]
+                //backgroundColor: Qt.rgba(0.3,0,0)
+                //borderColor: "white"
             }
         }
 
