@@ -10,6 +10,8 @@ At current stage, QuickCollider provides the following:
 
 - Couple of demo QML scenes and corresponding SC code
 
+![screenshot](demo/images/gui_screenshot.png "Screenshot")
+
 ### How to use the QuickCollider program
 
 Once it is built, start up the *quickcollider* executable. It takes 2 arguments: an OSC port, and a QML scene file.
