@@ -8,24 +8,30 @@ At current stage, QuickCollider provides the following:
 
 - SC classes that wrap OSC communication into an easy API.
 
-- Couple of demo QML scenes and corresponding SC code in the "test" subfolder
+- Couple of demo QML scenes and corresponding SC code
 
-** How to use the QuickCollider program
+### How to use the QuickCollider program
 
-It takes 2 arguments: an OSC port, and a QML scene file. QML elements in the scene may set an "OSC.path" attached property to define the OSC path at which they are accessible. Thus, all their properties, methods and signals become accessible via OSC, by appending their name to the element path, e.g. "/anElement/aProperty".
+Once it is built, start up the *quickcollider* executable. It takes 2 arguments: an OSC port, and a QML scene file.
 
-** How to communicate with QuickCollider from SuperCollider
+QML elements in the scene may set an "OSC.path" attached property to define the OSC path at which they are accessible. Thus, all their properties, methods and signals become accessible via OSC, by appending their name to the element path, e.g. "/anElement/aProperty".
+
+Try *quickcollider* with demo ".qml" files in the "demo" subfolder.
+
+### How to communicate with QuickCollider from SuperCollider
 
 In order to use SuperCollider classes provided by QuickCollider, make the "sc" subfolder available to sclang for compilation.
 
-Check out the demo SuperCollider document, which contains explanation of usage...
+Check out the demo SuperCollider code in the "demo" subfolder, which contains explanation of usage...
 
-** Prerequisits
+### How to build QuickCollider:
 
-QuickCollider depends on:
+You will require:
 
+- CMake
 - Qt 5 (tested with RC 1)
 - liblo (C library for OSC)
+- SuperCollider source code (latest master branch)
 
-QuickCollider uses CMake building system.
+*You need to tell CMake where the SuperCollider source directory is located, by setting the SC_SOURCE_DIR variable.*
 
