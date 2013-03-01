@@ -40,13 +40,18 @@ m.set( \fill, false )
 ~scope.start
 ~scope.stop
 
+// Connect the "cycle" slider to change the scoping period:
+~cycleSlider = QuickGuiElement(~gui, '/scope/cycleSlider');
+(
+~cycleSlider.subscribe( \value, { |path, value|
+	var cycle = value.pow(2) * (~scope.maxCycle - 50) + 50;
+	~scope.cycle = cycle;
+});
+)
+
 // Remote control appearance:
 ~scope.set(\mode, 2) // XY mode
 ~scope.set(\mode, 1) // Channel overlay mode
 ~scope.set(\mode, 0) // Normal mode
-~scope.set(\yZoom, 3)
-~scope.set(\xZoom, 3) // Only has effect in XY mode
-
-~scope.cycle = 200 // change the scoping period (in sound frames)
 ~scope.set(\updateInterval, 150) // change the GUI update interval (in ms)
 
