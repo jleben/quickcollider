@@ -7,8 +7,18 @@ project(QuickCollider)
 
 find_package(Qt5Quick REQUIRED)
 
+if(NOT SC_SOURCE_DIR)
+    message( FATAL_ERROR
+             "SuperCollider source directory has not been provided.\n"
+             "Please set the SC_SOURCE_DIR variable!" )
+endif()
+
 # For moc to work properly:
 include_directories( ${Qt5Qml_INCLUDE_DIRS} )
+
+include_directories( ${SC_SOURCE_DIR} )
+include_directories( "${SC_SOURCE_DIR}/external_libraries/boost" )
+include_directories( "${SC_SOURCE_DIR}/external_libraries/TLSF-2.4.6/src" )
 
 set( moc_hdr
     osc/osc_server.hpp
@@ -19,6 +29,7 @@ set( moc_hdr
     gui/model/multi_slider_model.hpp
     gui/model/graph_model.hpp
     gui/widgets/graph_plotter.hpp
+    gui/widgets/oscilloscope.hpp
 )
 
 set( src
@@ -29,6 +40,7 @@ set( src
     osc/qml_osc_interface.cpp
     gui/model/graph_model.cpp
     gui/widgets/graph_plotter.cpp
+    gui/widgets/oscilloscope.cpp
 )
 
 qt5_wrap_cpp( moc_src ${moc_hdr} )
