@@ -36,21 +36,15 @@ Item {
         id: mSliderModel;
         count: 10;
         orientation: root.orientation
-        bounds: {
-            var extent;
-            if (sliderWidth > 0) {
-                extent = count * sliderWidth;
-                if (count > 0)
-                    extent = extent + (count - 1) * spacing;
-            } else {
-                extent = (orientation == Qt.Vertical) ? sliderArray.width : sliderArray.height;
-            }
+        bounds:
+        {
+            var r = sliderArray.childrenRect;
             if (orientation == Qt.Vertical)
-                Qt.rect(0, sliderHeight/2,
-                        extent, mouseArea.height - sliderHeight)
+                Qt.rect(r.x, r.y + sliderHeight/2,
+                        r.width, r.height - sliderHeight)
             else
-                Qt.rect(sliderHeight/2, 0,
-                        mouseArea.width - sliderHeight, extent)
+                Qt.rect(r.x + sliderHeight/2, 0,
+                        r.width - sliderHeight, r.height)
         }
         property real reference: centered ? 0.5 : (inverted ? 1 : 0)
     }
@@ -114,65 +108,24 @@ Item {
         }
     }
 
-    Component {
-        id: horizontalArray
-        Row {
-            spacing: root.spacing
-            Repeater {
-                id: repeater
-                model: mSliderModel
-                Loader {
-                    property real position: model.position;
-                    property real value: model.value;
-                    sourceComponent: defaultSlider
-                    width: sliderWidth
-                    Binding on width {
-                        when: sliderWidth == 0
-                        value: (count > 1) ?
-                                   (parent.width - ((count - 1) * spacing)) / count :
-                                   parent.width
-                    }
-                    height: parent.height
-                }
-            }
-        }
-    }
-
-    Component {
-        id: verticalArray
-        Column {
-            spacing: root.spacing
-            Repeater {
-                id: repeater
-                model: mSliderModel
-                Loader {
-                    property real position: model.position;
-                    property real value: model.value;
-                    sourceComponent: defaultSlider
-                    height: sliderWidth
-                    Binding on height {
-                        when: sliderWidth == 0
-                        value: (count > 1) ?
-                                   (root.height - ((count - 1) * spacing)) / count :
-                                   root.height
-                    }
-                    width: root.width
-                }
-            }
-        }
-    }
-
-
     Loader {
         sourceComponent: background
         anchors.fill: parent
     }
 
-    Loader {
+    ArrayLayout {
         id: sliderArray
         anchors.fill: parent
         anchors.margins: 1
-        sourceComponent: (orientation == Qt.Vertical) ? horizontalArray : verticalArray
+        clip: root.sliderWidth > 0
+        orientation: root.orientation == Qt.Vertical ? Qt.Horizontal : Qt.Vertical
+        extent: root.sliderWidth
+        spacing: root.spacing
+        Repeater {
+            id: repeater
+            model: mSliderModel
+            delegate: defaultSlider
+        }
     }
 
     MouseArea {
