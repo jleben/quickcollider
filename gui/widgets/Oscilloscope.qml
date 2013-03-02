@@ -28,6 +28,7 @@ Item {
             id: plotter
             anchors.fill: parent
             anchors.margins: 1
+            clip: true
         }
     }
 }
