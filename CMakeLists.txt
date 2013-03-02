@@ -2,10 +2,14 @@ cmake_minimum_required(VERSION 2.8.9)
 
 project(QuickCollider)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 #set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Quick REQUIRED)
+
+find_package(Dependencies REQUIRED)
 
 if(NOT SC_SOURCE_DIR)
     message( FATAL_ERROR
@@ -20,6 +24,8 @@ include_directories( ${SC_SOURCE_DIR} )
 include_directories( "${SC_SOURCE_DIR}/external_libraries/boost" )
 include_directories( "${SC_SOURCE_DIR}/external_libraries/TLSF-2.4.6/src" )
 
+include_directories( ${SNDFILE_INCLUDE_DIR} )
+
 set( moc_hdr
     osc/osc_server.hpp
     osc/osc_client.hpp
@@ -30,6 +36,7 @@ set( moc_hdr
     gui/model/graph_model.hpp
     gui/widgets/graph_plotter.hpp
     gui/widgets/oscilloscope.hpp
+    gui/widgets/sf_view.hpp
     gui/utility/array_layout.hpp
 )
 
@@ -42,6 +49,9 @@ set( src
     gui/model/graph_model.cpp
     gui/widgets/graph_plotter.cpp
     gui/widgets/oscilloscope.cpp
+    gui/widgets/sf_view.cpp
+    gui/widgets/sf_cache_stream.cpp
+    gui/widgets/sf_file_stream.cpp
 )
 
 qt5_wrap_cpp( moc_src ${moc_hdr} )
@@ -49,4 +59,4 @@ qt5_wrap_cpp( moc_src ${moc_hdr} )
 add_executable(quickcollider ${src} ${moc_src})
 
 qt5_use_modules(quickcollider Quick)
-target_link_libraries(quickcollider lo)
+target_link_libraries(quickcollider lo ${SNDFILE_LIBRARY})

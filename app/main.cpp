@@ -6,6 +6,7 @@
 #include "../gui/model/graph_model.hpp"
 #include "../gui/widgets/graph_plotter.hpp"
 #include "../gui/widgets/oscilloscope.hpp"
+#include "../gui/widgets/sf_view.hpp"
 #include "../gui/utility/array_layout.hpp"
 
 #include <QGuiApplication>
@@ -49,6 +50,8 @@ int main(int argc, char *argv[])
             ("QuickCollider", 0, 1, "GraphPlotter2");
     qmlRegisterType<QuickCollider::Oscilloscope>
             ("QuickCollider", 0, 1, "OscilloscopePlotter");
+    qmlRegisterType<QuickCollider::SoundFileView>
+            ("QuickCollider", 0, 1, "WaveformPlotter");
 
     OscServer oscServer( serverPort.toLatin1() );
     oscServer.start();
