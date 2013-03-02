@@ -6,6 +6,7 @@
 #include "../gui/model/graph_model.hpp"
 #include "../gui/widgets/graph_plotter.hpp"
 #include "../gui/widgets/oscilloscope.hpp"
+#include "../gui/utility/array_layout.hpp"
 
 #include <QGuiApplication>
 #include <QQuickView>
@@ -34,6 +35,8 @@ int main(int argc, char *argv[])
 
     qmlRegisterUncreatableType<QmlOscInterface>
             ("OSC", 0, 1, "OSC", "Cannot instantiate this object");
+    qmlRegisterType<QuickCollider::ArrayLayout>
+            ("QuickCollider", 0, 1, "ArrayLayout");
     qmlRegisterType<QuickCollider::SliderModel>
             ("QuickCollider", 0, 1, "SliderModel");
     qmlRegisterType<QuickCollider::MultiSliderModel>

@@ -30,6 +30,7 @@ set( moc_hdr
     gui/model/graph_model.hpp
     gui/widgets/graph_plotter.hpp
     gui/widgets/oscilloscope.hpp
+    gui/utility/array_layout.hpp
 )
 
 set( src
