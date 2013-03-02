@@ -31,7 +31,7 @@ Check out the demo SuperCollider code in the "demo" subfolder, which contains ex
 You will require:
 
 - CMake
-- Qt 5 (tested with RC 1)
+- Qt 5 (tested with 5.0.1)
 - liblo (C library for OSC)
 - SuperCollider source code (latest master branch)
 
