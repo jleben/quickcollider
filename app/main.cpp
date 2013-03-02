@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     QQuickView *window = new QQuickView(&engine, 0);
     window->setColor( app.palette().color(QPalette::Window) );
     window->setSource(QUrl::fromLocalFile(scenePath));
+    window->setResizeMode(QQuickView::SizeRootObjectToView);
     window->show();
 
     return app.exec();
