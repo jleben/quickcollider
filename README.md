@@ -32,7 +32,8 @@ You will require:
 
 - CMake
 - Qt 5 (tested with 5.0.1)
-- liblo (C library for OSC)
+- liblo (for OSC)
+- libsndfile (for sound file reading)
 - SuperCollider source code (latest master branch)
 
 *You need to tell CMake where the SuperCollider source directory is located, by setting the SC_SOURCE_DIR variable.*
