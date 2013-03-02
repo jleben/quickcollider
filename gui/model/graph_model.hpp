@@ -298,7 +298,7 @@ private:
     };
 
 private:
-
+#if 0
     QObject * target() const { return m_target; }
 
     void set_target( QObject *target )
@@ -308,6 +308,7 @@ private:
         m_target = target;
         m_target->installEventFilter(this);
     }
+#endif
 
     QRectF area() const
     {
@@ -317,6 +318,12 @@ private:
     void setArea( const QRectF & area )
     {
         m_area = area;
+        int elemCount = _model.elementCount();
+        if (elemCount) {
+            emit dataChanged( createIndex(0,0),
+                              createIndex(elemCount-1,0),
+                              QVector<int>() << NodePosition );
+        }
     }
 
     QPointF valueForPosition( const QPointF & pos ) const
