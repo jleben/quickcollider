@@ -4,7 +4,7 @@ import QuickCollider 0.1
 Item {
     id: slider
     property int orientation: (width <= height) ? Qt.Vertical : Qt.Horizontal;
-    property alias inverted: model.inverted
+    property bool inverted: false
     property alias steps: model.steps
     property alias value: model.value;
     property real knobSize: 15;
@@ -18,6 +18,10 @@ Item {
     property Component knob: defaultKnob
 
     SliderModel { id: model }
+
+    Mapping1D { id: mouseMapping; sourceOffset: knobSize/2 }
+
+    Mapping1D { id: valueMapping; }
 
     Component {
         id: defaultBackground
@@ -51,6 +55,11 @@ Item {
     Loader {
         id: knobItem
         sourceComponent: knob
+        NumberMapper {
+            id: knobMapper
+            mapping: valueMapping
+            source: model.value
+        }
     }
 
     MouseArea {
@@ -60,7 +69,7 @@ Item {
         onPressed: setValue(mouse)
         onPositionChanged: setValue(mouse)
         function setValue(mouse) {
-            model.position = (orientation == Qt.Vertical) ? mouse.y : mouse.x;
+            model.value = mouseMapping.map( (orientation == Qt.Vertical) ? mouse.y : mouse.x );
         }
     }
 
@@ -69,14 +78,20 @@ Item {
             State {
                 when: orientation == Qt.Vertical
                 PropertyChanges {
-                    target: model
-                    minimumPosition: mouseArea.y + mouseArea.height - (knobSize / 2)
-                    maximumPosition: mouseArea.y + (knobSize / 2)
+                    target: mouseMapping
+                    sourceRange: mouseArea.height - knobSize
+                    invert: !slider.inverted
+                }
+                PropertyChanges {
+                    target: valueMapping
+                    targetOffset: mouseArea.y
+                    targetRange: mouseArea.height - knobSize
+                    invert: !slider.inverted
                 }
                 PropertyChanges {
                     target: knobItem
                     height: knobSize
-                    y: model.position - (knobSize / 2);
+                    y: knobMapper.value
                 }
                 AnchorChanges {
                     target: knobItem
@@ -87,14 +102,20 @@ Item {
             State {
                 when: orientation == Qt.Horizontal
                 PropertyChanges {
-                    target: model
-                    minimumPosition: mouseArea.x + (knobSize / 2)
-                    maximumPosition: mouseArea.x + mouseArea.width - (knobSize / 2)
+                    target: mouseMapping
+                    sourceRange: mouseArea.width - knobSize
+                    invert: slider.inverted
+                }
+                PropertyChanges {
+                    target: valueMapping
+                    targetOffset: mouseArea.x
+                    targetRange: mouseArea.width - knobSize
+                    invert: slider.inverted
                 }
                 PropertyChanges {
                     target: knobItem
                     width: knobSize
-                    x: model.position - (knobSize / 2);
+                    x: knobMapper.value
                 }
                 AnchorChanges {
                     target: knobItem
