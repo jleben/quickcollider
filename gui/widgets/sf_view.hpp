@@ -49,17 +49,24 @@ class SoundFileView : public QQuickPaintedItem
     Q_OBJECT
 
     Q_PROPERTY( float readProgress READ loadProgress )
-    Q_PROPERTY( int startFrame READ startFrame )
+
+    Q_PROPERTY( int firstFrame READ firstFrame )
     Q_PROPERTY( int frames READ frames )
-    Q_PROPERTY( double viewFrames READ viewFrames )
-    Q_PROPERTY( double viewStartFrame READ viewStartFrame WRITE scrollTo )
-    Q_PROPERTY( float scrollPos READ scrollPos WRITE setScrollPos )
+
+    Q_PROPERTY( qreal firstVisibleFrame READ firstVisibleFrame WRITE setFirstVisibleFrame )
+    Q_PROPERTY( qreal visibleFrames READ visibleFrames WRITE setVisibleFrames )
+    Q_PROPERTY( qreal firstVisibleTime READ firstVisibleTime WRITE setFirstVisibleTime )
+    Q_PROPERTY( qreal visibleDuration READ visibleDuration WRITE setVisibleDuration )
+    Q_PROPERTY( qreal scroll READ scroll WRITE setScroll )
+    Q_PROPERTY( qreal zoom READ zoom WRITE setZoom NOTIFY visibleRangeChanged )
+    Q_PROPERTY( qreal framesPerPixel READ framesPerPixel NOTIFY visibleRangeChanged );
+
     Q_PROPERTY( int currentSelection READ currentSelection WRITE setCurrentSelection )
     Q_PROPERTY( QVariantList selections READ selections )
 
     Q_PROPERTY( qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged )
-    Q_PROPERTY( float yZoom READ yZoom WRITE setYZoom )
-    Q_PROPERTY( float xZoom READ xZoom WRITE setXZoom )
+    Q_PROPERTY( qreal scale READ scale WRITE setScale )
+
     Q_PROPERTY( bool cursorVisible READ cursorVisible WRITE setCursorVisible )
     Q_PROPERTY( bool cursorEditable READ cursorEditable WRITE setCursorEditable )
     Q_PROPERTY( int cursorPosition READ cursorPosition WRITE setCursorPosition )
@@ -86,6 +93,13 @@ public:
 
     Q_INVOKABLE void write( const QVector<double> & data, int offset );
 
+    Q_INVOKABLE qreal frameAt( qreal position )
+    {
+        QRectF rect = contentsBoundingRect();
+        qreal relativePosition = rect.width() ? position / rect.width() : 0.0;
+        return (relativePosition * _dur + _beg);
+    }
+
 public:
 
     struct Selection {
@@ -100,18 +114,32 @@ public:
     ~SoundFileView();
 
     float loadProgress();
-    sf_count_t startFrame() { return _rangeBeg; }
-    sf_count_t frames() { return _rangeDur; }
 
-    double viewStartFrame() { return _beg; }
-    double viewFrames() { return _dur; }
-    float scrollPos(); // as fraction of scrolling range
-    float zoom(); //visible fraction
-    float xZoom(); //visible seconds
-    float yZoom(); //factor
+    sf_count_t firstFrame() const { return _rangeBeg; }
+    sf_count_t frames() const { return _rangeDur; }
+
+    qreal firstVisibleFrame() const { return _beg; }
+    qreal visibleFrames() const { return _dur; }
+    void setFirstVisibleFrame( qreal frame );
+    void setVisibleFrames( qreal frames );
+
+    qreal firstVisibleTime() const;
+    qreal visibleDuration() const;
+    void setFirstVisibleTime( qreal seconds );
+    void setVisibleDuration( qreal seconds );
+
+    qreal zoom() const;
+    void setZoom( qreal zoom );
+    Q_INVOKABLE void zoomTo( qreal position, qreal zoom );
+    qreal scroll() const; // as fraction of scrolling range
+    void setScroll( qreal scroll ); // as fraction of scrolling range
+
+    qreal framesPerPixel() { return _fpp; }
+
+    qreal scale() const { return _yZoom; }
+    void setScale( qreal scale ) { _yZoom = scale; update(); }
 
     qreal spacing() const { return m_spacing; }
-
     void setSpacing( qreal spacing ) {
         m_spacing = qMax(0.0, spacing);
         update();
@@ -164,26 +192,17 @@ public:
     //QSize minimumSizeHint() const { return QSize( 100, 20 ); }
 
 public slots:
-    void zoomTo( double fraction );
-    //void zoomTo( float fraction, quint64 frame );
-    void zoomBy( double factor );
-    void zoomAllOut();
-    void zoomSelection( int selectionIndex );
-    void scrollTo( double frame );
-    void scrollBy( double frames );
-    void setScrollPos( double fraction ); // as fraction of scrolling range
     void scrollToStart();
     void scrollToEnd();
-    void setYZoom( double factor );
-    void setXZoom( double seconds );
-
+    void zoomAllOut();
+    void zoomSelection( int selectionIndex );
 
 signals:
-
     void loadProgress( int );
     void loadingDone();
 
     void spacingChanged( qreal );
+    void visibleRangeChanged();
 
 protected:
 #if 0
@@ -200,7 +219,7 @@ protected:
 private:
 
     void doLoad( SNDFILE *new_sf, const SF_INFO &new_info, sf_count_t beginning, sf_count_t duration );
-    inline void updateFPP()
+    void updateFPP()
     {
         qreal width = contentsBoundingRect().width();
         _fpp = width > 0.0 ? (double) _dur / width : 0.0;

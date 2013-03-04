@@ -157,6 +157,8 @@ void SoundFileView::load( const QVector<double> & data, int offset, int ch, int 
     connect( _cache, SIGNAL(loadingDone()), this, SLOT(update()) );
 
     _cache->load( data, _rangeDur, offset, ch );
+
+    emit visibleRangeChanged();
 }
 
 void SoundFileView::allocate ( int frames, int ch, int sr )
@@ -185,6 +187,8 @@ void SoundFileView::allocate ( int frames, int ch, int sr )
     _cache->allocate( frames, ch );
 
     update();
+
+    emit visibleRangeChanged();
 }
 
 void SoundFileView::write( const QVector<double> & data, int offset )
@@ -260,6 +264,8 @@ void SoundFileView::doLoad( SNDFILE *new_sf, const SF_INFO &new_info, sf_count_t
     _cache->load( sf, sfInfo, beg, dur, kMaxFramesPerCacheUnit, kMaxRawFrames );
 
     update();
+
+    emit visibleRangeChanged();
 }
 
 float SoundFileView::loadProgress()
@@ -267,20 +273,107 @@ float SoundFileView::loadProgress()
     return _cache ? _cache->loadProgress() : 1.f;
 }
 
-float SoundFileView::zoom()
+void SoundFileView::setFirstVisibleFrame( qreal frame )
 {
-    // NOTE We have limited _rangeDur to 1 minimum.
-    return _dur / _rangeDur;
+    frame = qBound( (qreal)_rangeBeg, frame, _rangeEnd - _dur );
+    if (_beg == frame)
+        return;
+    _beg = frame;
+
+    update();
+    emit visibleRangeChanged();
 }
 
-float SoundFileView::xZoom()
+void SoundFileView::setVisibleFrames( qreal frames )
 {
-    return ( sfInfo.samplerate ? _dur / sfInfo.samplerate : 0 );
+    frames = qBound( 1.0, frames, (qreal) _rangeDur );
+    if (_dur == frames)
+        return;
+    _dur = frames;
+
+    if( _beg + _dur > _rangeEnd ) _beg = _rangeEnd - _dur;
+
+    updateFPP();
+    update();
+    emit visibleRangeChanged();
 }
 
-float SoundFileView::yZoom()
+qreal SoundFileView::firstVisibleTime() const
 {
-    return _yZoom;
+    return ( sfInfo.samplerate ? _beg / sfInfo.samplerate : 0.0 );
+}
+
+qreal SoundFileView::visibleDuration() const
+{
+    return ( sfInfo.samplerate ? _dur / sfInfo.samplerate : 0.0 );
+}
+
+void SoundFileView::setFirstVisibleTime( qreal seconds )
+{
+    setFirstVisibleFrame( seconds * sfInfo.samplerate );
+}
+
+void SoundFileView::setVisibleDuration( qreal seconds )
+{
+    setVisibleFrames( seconds * sfInfo.samplerate );
+}
+
+qreal SoundFileView::scroll() const
+{
+    double scrollRange = _rangeDur - _dur;
+    return scrollRange > 0.0 ? (_beg - _rangeBeg) / scrollRange : 0.f;
+}
+void SoundFileView::setScroll( qreal scroll )
+{
+    setFirstVisibleFrame( scroll * (_rangeDur - _dur) + _rangeBeg );
+}
+
+void SoundFileView::scrollToStart()
+{
+    setFirstVisibleFrame( _rangeBeg );
+}
+
+void SoundFileView::scrollToEnd()
+{
+    setFirstVisibleFrame( _rangeEnd - _dur );
+}
+
+qreal SoundFileView::zoom() const
+{
+    return _dur > 0.0 ? (_rangeDur / _dur) : 1.0;
+}
+
+void SoundFileView::setZoom( qreal zoom )
+{
+    zoom = qMax(1.0, zoom);
+
+    setVisibleFrames( _rangeDur / zoom );
+}
+
+void SoundFileView::zoomTo( qreal position, qreal zoom )
+{
+    zoom = qMax(1.0, zoom);
+    double target_frame = position * _fpp + _beg;
+
+    _dur = qMax( 1.0, _rangeDur / zoom );
+
+    updateFPP();
+
+    _beg = target_frame - (position * _fpp);
+
+    _beg = qBound(0.0, _beg, _rangeDur - _dur);
+
+    update();
+    emit visibleRangeChanged();
+}
+
+void SoundFileView::zoomAllOut()
+{
+    _beg = _rangeBeg;
+    _dur = _rangeDur;
+    updateFPP();
+    update();
+    emit visibleRangeChanged();
 }
 
 QVariantList SoundFileView::selections() const
@@ -375,76 +468,6 @@ void SoundFileView::setWaveColors( const QVariantList &list )
     update();
 }
 
-void SoundFileView::zoomTo( double z )
-{
-    z = qMax( 0.0, qMin( 1.0, z ) );
-
-    _dur = qMax( _rangeDur * z, 1.0 );
-
-    //printf("dur: %Li view: %Li\n", sfInfo.frames, _dur);
-    if( _beg + _dur > _rangeEnd ) _beg = _rangeEnd - _dur;
-
-    updateFPP();
-    update();
-}
-
-void SoundFileView::zoomBy( double factor )
-{
-    zoomTo( zoom() * factor );
-}
-
-void SoundFileView::zoomAllOut()
-{
-    _beg = _rangeBeg;
-    _dur = _rangeDur;
-    updateFPP();
-    update();
-}
-
-void SoundFileView::scrollTo( double startFrame )
-{
-    _beg = qBound( (double)_rangeBeg, startFrame, _rangeEnd - _dur );
-    update();
-}
-
-void SoundFileView::scrollBy( double f )
-{
-    scrollTo( _beg + f );
-}
-
-float SoundFileView::scrollPos()
-{
-    double scrollRange = _rangeDur - _dur;
-    return scrollRange > 0.0 ? (_beg - _rangeBeg) / scrollRange : 0.f;
-}
-void SoundFileView::setScrollPos( double fraction )
-{
-    scrollTo( fraction * (_rangeDur - _dur) + _rangeBeg );
-}
-
-void SoundFileView::scrollToStart()
-{
-    scrollTo( _rangeBeg );
-}
-
-void SoundFileView::scrollToEnd()
-{
-    scrollTo( _rangeEnd - _dur );
-}
-
-void SoundFileView::setXZoom( double seconds )
-{
-    // NOTE We have limited _rangeDur to 1 minimum.
-    double frac = seconds * sfInfo.samplerate / _rangeDur;
-    zoomTo( frac );
-}
-
-void SoundFileView::setYZoom( double factor )
-{
-    _yZoom = factor;
-    update();
-}
-
 void SoundFileView::zoomSelection( int i )
 {
     if( i < 0 || i > 63 ) return;
@@ -463,6 +486,7 @@ void SoundFileView::zoomSelection( int i )
 
     updateFPP();
     update();
+    emit visibleRangeChanged();
 }
 #if 0
 void SoundFileView::resizeEvent( QResizeEvent * )
@@ -639,11 +663,11 @@ void SoundFileView::mouseMoveEvent( QMouseEvent *ev )
         if( mods & Qt::ShiftModifier ) {
             double factor = pow( 2, (ev->pos().y() - _dragPoint.y()) * 0.008 );
             // zoom to the initial zoom times the factor based on distance from initial position
-            zoomTo( _dragData2 * factor );
+            setZoom( _dragData2 * factor );
         }
         // scroll to the clicked frame minus the current mouse position in frames
         // _fpp has been adjusted by zooming
-        scrollTo( _dragData - (ev->pos().x() * _fpp) );
+        setFirstVisibleFrame( _dragData - (ev->pos().x() * _fpp) );
     }
     else if( _dragAction == Select ) {
         sf_count_t frame = qBound( 0, ev->pos().x(), width() ) * _fpp + _beg;
