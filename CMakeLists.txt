@@ -38,6 +38,7 @@ set( moc_hdr
     gui/widgets/oscilloscope.hpp
     gui/widgets/sf_view.hpp
     gui/utility/array_layout.hpp
+    gui/utility/mapping.hpp
 )
 
 set( src

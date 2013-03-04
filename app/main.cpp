@@ -8,6 +8,7 @@
 #include "../gui/widgets/oscilloscope.hpp"
 #include "../gui/widgets/sf_view.hpp"
 #include "../gui/utility/array_layout.hpp"
+#include "../gui/utility/mapping.hpp"
 
 #include <QGuiApplication>
 #include <QQuickView>
@@ -36,6 +37,14 @@ int main(int argc, char *argv[])
 
     qmlRegisterUncreatableType<QmlOscInterface>
             ("OSC", 0, 1, "OSC", "Cannot instantiate this object");
+    qmlRegisterType<QuickCollider::Mapping1D>
+            ("QuickCollider", 0, 1, "Mapping1D");
+    qmlRegisterType<QuickCollider::Mapping2D>
+            ("QuickCollider", 0, 1, "Mapping2D");
+    qmlRegisterType<QuickCollider::NumberMapper>
+            ("QuickCollider", 0, 1, "NumberMapper");
+    qmlRegisterType<QuickCollider::PointMapper>
+            ("QuickCollider", 0, 1, "PointMapper");
     qmlRegisterType<QuickCollider::ArrayLayout>
             ("QuickCollider", 0, 1, "ArrayLayout");
     qmlRegisterType<QuickCollider::SliderModel>
