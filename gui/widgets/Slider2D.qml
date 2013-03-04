@@ -6,8 +6,8 @@ Item {
     property int orientation: (width <= height) ? Qt.Vertical : Qt.Horizontal;
     property alias xValue: xModel.value
     property alias yValue: yModel.value
-    property alias xInverted: xModel.inverted
-    property alias yInverted: yModel.inverted
+    property bool xInverted: false
+    property bool yInverted: false
     property alias xSteps: xModel.steps
     property alias ySteps: yModel.steps
     property real knobWidth: 15
@@ -20,15 +20,27 @@ Item {
     property Component border: defaultBorder
     property Component knob: defaultKnob
 
-    SliderModel {
-        id: xModel;
-        minimumPosition: mouseArea.x + (knobWidth / 2)
-        maximumPosition: mouseArea.x + mouseArea.width - (knobWidth / 2)
+    SliderModel { id: xModel; }
+    SliderModel { id: yModel  }
+
+    Mapping2D {
+        id: mouseMapping
+        sourceRect: Qt.rect( knobWidth / 2,
+                             knobHeight / 2,
+                             mouseArea.width - knobWidth,
+                             mouseArea.height - knobHeight )
+        invertX: xInverted
+        invertY: !yInverted
     }
-    SliderModel {
-        id: yModel
-        minimumPosition: mouseArea.y + mouseArea.height - (knobHeight / 2)
-        maximumPosition: mouseArea.y + (knobHeight / 2)
+
+    Mapping2D {
+        id: valueMapping
+        targetRect: Qt.rect(mouseArea.x,
+                            mouseArea.y,
+                            mouseArea.width - knobWidth,
+                            mouseArea.height - knobHeight )
+        invertX: xInverted
+        invertY: !yInverted
     }
 
     Component {
@@ -80,8 +92,13 @@ Item {
         sourceComponent: knob
         width: knobWidth
         height: knobHeight
-        x: xModel.position - (knobWidth / 2)
-        y: yModel.position - (knobHeight / 2)
+        x: valueMapper.x
+        y: valueMapper.y
+        PointMapper {
+            id: valueMapper
+            mapping: valueMapping
+            source: Qt.point(xModel.value, yModel.value)
+        }
     }
 
     MouseArea {
@@ -91,8 +108,9 @@ Item {
         onPressed: updateValue(mouse)
         onPositionChanged: updateValue(mouse)
         function updateValue(mouse) {
-            xModel.position = mouse.x;
-            yModel.position = mouse.y;
+            var value = mouseMapping.map( Qt.point(mouse.x, mouse.y) );
+            xModel.value = value.x;
+            yModel.value = value.y;
         }
     }
 }
