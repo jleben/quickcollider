@@ -28,6 +28,8 @@ class OscServer : public QObject
     Q_OBJECT
 
 public:
+    class BadPortException {};
+
     typedef QList<OscInterface> InterfaceList;
 
     static OscServer *instance() { return mInstance; }

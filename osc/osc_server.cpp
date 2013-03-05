@@ -6,6 +6,9 @@ OscServer::OscServer(const QByteArray &port ):
 {
     mServerThread = lo_server_thread_new(port.constData(), NULL);
 
+    if (!mServerThread)
+        throw BadPortException();
+
     lo_server_thread_add_method( mServerThread, NULL, NULL, &OscServer::messageHandler, this );
 
     Q_ASSERT(mInstance == 0);
