@@ -72,17 +72,17 @@ bool OscDispatcher::dispatch( DispatchTarget targetType,
         }
         int propertyIdx = metaObject->indexOfProperty(targetName);
         if (propertyIdx == -1) {
-            qWarning() << "OscDispatcher: No property for path:" << path;
+            qWarning() << "OscDispatcher: No property for path:" << (path+'/'+targetName);
             return false;
         }
         success = metaObject->property(propertyIdx).write( object, args[1] );
         if (!success)
-            qWarning() << "OscDispatcher: Failed to set property for path:" << path;
+            qWarning() << "OscDispatcher: Failed to set property for path:" << (path+'/'+targetName);
     }
     else if (targetType == Method) {
         int methodIdx = QuickCollider::indexOfMethod( metaObject, targetName );
         if (methodIdx == -1) {
-            qWarning() << "OscDispatcher: No method for path:" << path;
+            qWarning() << "OscDispatcher: No method for path:" << (path+'/'+targetName);
             return false;
         }
         success = metaObject->method(methodIdx).invoke
@@ -98,7 +98,7 @@ bool OscDispatcher::dispatch( DispatchTarget targetType,
                   toGenericArgument( args, 9 ),
                   toGenericArgument( args, 10 ) );
         if (!success)
-            qWarning() << "OscDispatcher: Failed to invoke method for path:" << path;
+            qWarning() << "OscDispatcher: Failed to invoke method for path:" << (path+'/'+targetName);
     }
 
     return success;
