@@ -23,8 +23,8 @@ k.set( \mouseMode, 2 ) // radial interaction
 
 m = QuickGuiElement(~gui, '/multiSlider');
 m.subscribe(\valueChanged, { |...a| a.postln } )
-m.set( \steps, 0 ) // round to 1/5
-m.set( \count, 100 ) // change amount of sliders
+m.set( \steps, 5 ) // round to 1/5
+m.set( \count, 30 ) // change amount of sliders
 m.set( \spacing, 0 )
 m.set( \orientation, 1 ) // 1 = horizontal, 2 = vertical
 m.set( \sliderWidth, 10 ) // fixed slider thickness
@@ -32,6 +32,9 @@ m.set( \inverted, true )
 m.set( \centered, true )
 m.set( \fill, false )
 //...
+
+w = QuickGuiElement(~gui, '/waveform');
+w.set( \file, Platform.resourceDir++"/sounds/a11wlk01.wav")
 
 // Now, for some oscilloscoping...
 // QuickOscilloscope is a subclass of QuickGuiElement that
