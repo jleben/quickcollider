@@ -62,8 +62,15 @@ int main(int argc, char *argv[])
     qmlRegisterType<QuickCollider::SoundFileView>
             ("QuickCollider", 0, 1, "WaveformPlotter");
 
-    OscServer oscServer( serverPort.toLatin1() );
-    oscServer.start();
+    OscServer *oscServer;
+    try {
+        oscServer = new OscServer( serverPort.toLatin1() );
+    } catch (OscServer::BadPortException &) {
+        qWarning() << "Could not create OSC server for port" << serverPort;
+        return 1;
+    }
+
+    oscServer->start();
 
     QQmlEngine engine;
     QQuickView *window = new QQuickView(&engine, 0);
