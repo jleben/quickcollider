@@ -2,7 +2,9 @@
 #define QUICK_COLLIDER_ARRAY_LAYOUT_INCLUDED
 
 #include <QQuickItem>
+#include <QCoreApplication>
 #include <QDebug>
+
 
 namespace QuickCollider {
 
@@ -19,7 +21,7 @@ public:
         m_orientation(Qt::Horizontal),
         m_spacing(0.0),
         m_extent(0.0),
-        m_dirty(false)
+        m_dirty_flags(0)
     {}
 
     Qt::Orientation orientation() const { return m_orientation; }
@@ -27,7 +29,7 @@ public:
     void setOrientation( Qt::Orientation orientation )
     {
         m_orientation = orientation;
-        requestRelayout();
+        invalidate( DirtyGeometry );
         emit orientationChanged(m_orientation);
     }
 /*
@@ -35,111 +37,73 @@ public:
 
     void setStretch( qreal stretch ) {
         m_stretch = stretch;
-        requestRelayout();
+        invalidate( DirtyGeometry );
     }
 */
     qreal extent() const { return m_extent; }
 
-    void setExtent( qreal extent ) {
+    void setExtent( qreal extent )
+    {
         m_extent = qMax(0.0, extent);
-        requestRelayout();
+        invalidate( DirtyGeometry );
     }
 
     qreal spacing() const { return m_spacing; }
 
-    void setSpacing( qreal spacing ) {
+    void setSpacing( qreal spacing )
+    {
         m_spacing = qMax(0.0, spacing);
-        requestRelayout();
+        invalidate( DirtyGeometry );
     }
 
 signals:
     void orientationChanged( Qt::Orientation );
 
 protected:
+    virtual bool event( QEvent * event )
+    {
+        if (event->type() == QEvent::LayoutRequest)
+            relayout();
+
+        return QQuickItem::event(event);
+    }
+
     virtual void itemChange(ItemChange change, const ItemChangeData & data)
     {
-        QQuickItem::itemChange(change, data);
-
         switch (change)
         {
         case ItemChildAddedChange:
         case ItemChildRemovedChange:
         {
-            QQuickItem *childItem = data.item;
-            if (childItem)
-            {
-                if (change == ItemChildAddedChange)
-                    if (hasContents(childItem))
-                        m_managed_items.append(childItem);
-                else
-                    m_managed_items.removeOne(childItem);
-                requestRelayout();
-            }
+            invalidate(DirtyItems);
         }
+        default:
+            break;
         }
+
+        QQuickItem::itemChange(change, data);
     }
 
     virtual void geometryChanged(const QRectF & newGeometry, const QRectF & oldGeometry)
     {
         QQuickItem::geometryChanged(newGeometry, oldGeometry);
-
-        requestRelayout();
-    }
-
-    virtual void updatePolish()
-    {
-        QQuickItem::updatePolish();
-
-        if (!m_dirty)
-            return;
-
-        m_dirty = false;
-
-        int child_count = m_managed_items.count();
-
-        if (!child_count)
-            return;
-
-        qreal shared_area = m_orientation == Qt::Horizontal ? height() : width();
-        qreal divided_area = m_orientation == Qt::Horizontal ? width() : height();
-
-        qreal division = m_extent;
-        if (division == 0.0) {
-            qreal combined_space = child_count > 1 ? (child_count - 1) * m_spacing : 0.0;
-            division = qMax(0.0, divided_area - combined_space) / child_count;
-        }
-
-        if (m_orientation == Qt::Horizontal)
-        {
-            for (int idx = 0; idx < child_count; ++idx)
-            {
-                QQuickItem *child = m_managed_items[idx];
-                child->setWidth( division );
-                child->setHeight( shared_area );
-                child->setX( idx * (division + m_spacing) );
-                child->setY( 0.0 );
-            }
-        }
-        else
-        {
-            for (int idx = 0; idx < child_count; ++idx)
-            {
-                QQuickItem *child = m_managed_items[idx];
-                child->setWidth( shared_area );
-                child->setHeight( division );
-                child->setX( 0.0 );
-                child->setY( idx * (division + m_spacing) );
-            }
-        }
+        invalidate( DirtyGeometry );
     }
 
 private:
-    void requestRelayout()
+    enum DirtyFlag {
+        DirtyGeometry = 1,
+        DirtyItems = 2
+    };
+
+    void invalidate( DirtyFlag dirty_flag )
     {
-        if (!m_dirty) {
-            m_dirty = true;
-            polish();
-        }
+        bool first_invalidation = !m_dirty_flags;
+
+        m_dirty_flags |= dirty_flag;
+
+        if (first_invalidation)
+            QCoreApplication::postEvent(this, new QEvent(QEvent::LayoutRequest));
     }
 
     bool hasContents( QQuickItem *item )
@@ -152,10 +116,69 @@ private:
                 return true;
     }
 
+    void relayout()
+    {
+        if (!m_dirty_flags)
+            return;
+
+        int dirty_flags = m_dirty_flags;
+        m_dirty_flags = 0;
+
+        if (dirty_flags & DirtyItems)
+        {
+            m_managed_items.clear();
+
+            QList<QQuickItem*> children = childItems();
+            int children_count = children.count();
+            for (int idx = 0; idx < children_count; ++idx)
+            {
+                if ( hasContents( children[idx] ) )
+                    m_managed_items.append( children[idx] );
+            }
+        }
+
+        int item_count = m_managed_items.count();
+
+        if (!item_count)
+            return;
+
+        qreal shared_area = m_orientation == Qt::Horizontal ? height() : width();
+        qreal divided_area = m_orientation == Qt::Horizontal ? width() : height();
+
+        qreal division = m_extent;
+        if (division == 0.0) {
+            qreal combined_space = item_count > 1 ? (item_count - 1) * m_spacing : 0.0;
+            division = qMax(0.0, divided_area - combined_space) / item_count;
+        }
+
+        if (m_orientation == Qt::Horizontal)
+        {
+            for (int idx = 0; idx < item_count; ++idx)
+            {
+                QQuickItem *child = m_managed_items[idx];
+                child->setWidth( division );
+                child->setHeight( shared_area );
+                child->setX( idx * (division + m_spacing) );
+                child->setY( 0.0 );
+            }
+        }
+        else
+        {
+            for (int idx = 0; idx < item_count; ++idx)
+            {
+                QQuickItem *child = m_managed_items[idx];
+                child->setWidth( shared_area );
+                child->setHeight( division );
+                child->setX( 0.0 );
+                child->setY( idx * (division + m_spacing) );
+            }
+        }
+    }
+
     Qt::Orientation m_orientation;
     qreal m_extent;
     qreal m_spacing;
-    bool m_dirty;
+    int m_dirty_flags;
     QList<QQuickItem*> m_managed_items;
 };
 
