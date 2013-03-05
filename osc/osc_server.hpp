@@ -89,7 +89,7 @@ private:
             var = arg->i;
             break;
         case 's':
-            var = QByteArray(&arg->s);
+            var = QString(&arg->s);
             break;
         default:
             qWarning() << "Dispatch: Argument of type" << type << "not converted.";
