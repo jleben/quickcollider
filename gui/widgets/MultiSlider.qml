@@ -16,7 +16,7 @@ Item {
     property bool centered: false
     property color sliderColor: Qt.rgba(0.1,0.1,0.1,1);
     property color fillColor: Qt.rgba(sliderColor.r, sliderColor.g, sliderColor.b, 0.4);
-    property color backgroundColor: "gray"
+    property color backgroundColor: Qt.rgba(0.7, 0.7, 0.7)
 
     property Component slider: defaultSlider;
     property Component background: defaultBackground;

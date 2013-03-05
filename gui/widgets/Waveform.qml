@@ -4,7 +4,7 @@ import QuickCollider 0.1
 Item {
     property string file
     property alias spacing: waveform.spacing
-    property color backgroundColor: "black"
+    property color backgroundColor: Qt.rgba(0.1, 0.1, 0.1)
     property Component background: defaultBackground
     property real mouseZoomFactor: 0.01
     property real wheelZoomFactor: 0.001

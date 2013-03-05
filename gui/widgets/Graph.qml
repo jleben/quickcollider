@@ -6,6 +6,8 @@ Item {
     property real nodeSize: 8
     property alias horizontalOrder: graphModel.horizontalOrder
     property alias count: graphModel.count
+    property color backgroundColor: Qt.rgba(0.7, 0.7, 0.7)
+
     function add(x, y)
     {
         graphModel.addValue(x, y);
@@ -56,7 +58,7 @@ Item {
     Rectangle {
         id: background
         anchors.fill: parent
-        color: "gray"
+        color: backgroundColor
         border.color: root.activeFocus ? "blue" : "black"
     }
 

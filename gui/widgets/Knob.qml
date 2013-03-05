@@ -8,6 +8,7 @@ Item
     property alias steps: model.steps
     property int mouseMode: 0
     property real mouseSensitivity: 0.008
+    property color color: Qt.rgba(0.7, 0.7, 0.7)
 
     property Component pointer: defaultPointer
 
@@ -17,7 +18,7 @@ Item
         id: defaultPointer
         Rectangle {
             radius: Math.min(width, height) / 2
-            color: "gray"
+            color: knob.color
             border.color: knob.activeFocus ? "blue" : "black"
             antialiasing: true
             Rectangle {

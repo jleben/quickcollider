@@ -13,7 +13,7 @@ Item {
     property real knobWidth: 15
     property real knobHeight: 15
     property color knobColor: Qt.rgba(0.1,0.1,0.1)
-    property color backgroundColor: "grey"
+    property color backgroundColor: Qt.rgba(0.7, 0.7, 0.7)
     property color borderColor: "black"
 
     property Component background: defaultBackground
