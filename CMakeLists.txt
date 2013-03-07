@@ -24,6 +24,7 @@ include_directories( ${SC_SOURCE_DIR} )
 include_directories( "${SC_SOURCE_DIR}/external_libraries/boost" )
 include_directories( "${SC_SOURCE_DIR}/external_libraries/TLSF-2.4.6/src" )
 
+include_directories( ${LO_INCLUDE_DIR} )
 include_directories( ${SNDFILE_INCLUDE_DIR} )
 
 set( moc_hdr
@@ -60,4 +61,4 @@ qt5_wrap_cpp( moc_src ${moc_hdr} )
 add_executable(quickcollider ${src} ${moc_src})
 
 qt5_use_modules(quickcollider Quick)
-target_link_libraries(quickcollider lo ${SNDFILE_LIBRARY})
+target_link_libraries(quickcollider ${LO_LIBRARY} ${SNDFILE_LIBRARY})
