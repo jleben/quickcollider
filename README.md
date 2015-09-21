@@ -31,7 +31,7 @@ Check out the demo SuperCollider code in the "demo" subfolder, which contains ex
 You will require:
 
 - CMake
-- Qt 5 (tested with 5.0.1)
+- Qt 5 (Tested with 5.0.1. Required modules: Core, GUI, Quick)
 - liblo (for OSC)
 - libsndfile (for sound file reading)
 - SuperCollider source code (latest master branch)
