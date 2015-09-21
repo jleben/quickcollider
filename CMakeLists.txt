@@ -67,3 +67,6 @@ add_executable(quickcollider ${src} ${moc_src})
 
 qt5_use_modules(quickcollider Quick)
 target_link_libraries(quickcollider ${LO_LIBRARY} ${SNDFILE_LIBRARY})
+if(UNIX)
+    target_link_libraries(quickcollider rt pthread)
+endif()
